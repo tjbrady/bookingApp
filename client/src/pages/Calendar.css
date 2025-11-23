@@ -2,7 +2,7 @@
   position: sticky;
   top: 20vh; /* Aligns with bottom of banner */
   margin-top: -5rem; /* Counteract parent padding to close gap */
-  background-color: lightgoldenrodyellow; /* Distinct background */
+  background-color: #ffff00; /* Distinct background */
   padding: 1rem;
   margin-bottom: 1rem;
   border-bottom: 1px solid #ccc;
@@ -20,7 +20,7 @@
 }
 
 .instructions-box {
-  background-color: lightgoldenrodyellow; /* Same as sticky header */
+  background-color: #ffff00; /* Same as sticky header */
   padding: 1rem;
   border-radius: 8px; /* Soften corners */
   flex-shrink: 0; /* Prevent shrinking in flex container */
@@ -140,7 +140,7 @@
 /* Orange triangle for pending bookings */
 .day-cell.pending::after {
   border-width: 0 12px 12px 0;
-  border-color: transparent #ffc107 transparent transparent;
+  border-color: transparent #ff8c00 transparent transparent;
 }
 
 /* Red triangle for cancellation pending bookings */
