@@ -11,26 +11,10 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// --- TEMPORARY DIAGNOSTIC CODE ---
-console.log('--- Checking Environment Variables ---');
-console.log('MONGO_URI from env:', process.env.MONGO_URI);
-console.log('------------------------------------');
-
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI);
-    console.log('**************************************');
-    console.log('*** DATABASE CONNECTION SUCCESSFUL ***');
-    console.log('**************************************');
-  } catch (err) {
-    console.error('**************************************');
-    console.error('*** DATABASE CONNECTION FAILED ***');
-    console.error('Full error object:', err);
-    console.error('**************************************');
-  }
-};
-connectDB();
-// --- END TEMPORARY DIAGNOSTIC CODE ---
+// Connect to MongoDB
+mongoose.connect(process.env.MONGO_URI)
+  .then(() => console.log('MongoDB connected...'))
+  .catch(err => console.error(err));
 
 // Routes
 app.use('/api/auth', require('./routes/auth.routes'));
