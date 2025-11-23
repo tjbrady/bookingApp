@@ -8,8 +8,8 @@ import './Calendar.css';
 const colourMap = { // Changed to colourMap
   Red: '#ffcccb',
   Blue: '#add8e6',
-  Orange: '#ffd700',
-  Yellow: '#ffffe0',
+  Orange: '#ffa500',
+  Yellow: '#ffff00',
   Green: '#90ee90',
 };
 const bookableColours = ['Blue', 'Orange', 'Yellow']; // Changed to bookableColours
