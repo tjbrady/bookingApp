@@ -1,0 +1,162 @@
+.bookings-sticky-header {
+  position: sticky;
+  top: 20vh; /* Aligns with bottom of banner */
+  margin-top: -5rem; /* Counteract parent padding to close gap */
+  background-color: lightgoldenrodyellow; /* Distinct background */
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid #ccc;
+  z-index: 999; /* Below navbar, above calendar */
+}
+
+.bookings-sticky-header h2 {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+}
+
+.bookings-sticky-header p {
+    margin-top: 0;
+    margin-bottom: 1rem;
+}
+
+.instructions-box {
+  background-color: lightgoldenrodyellow; /* Same as sticky header */
+  padding: 1rem;
+  border-radius: 8px; /* Soften corners */
+  flex-shrink: 0; /* Prevent shrinking in flex container */
+  max-width: 400px; /* Limit width */
+  font-size: 0.9em; /* Slightly smaller text */
+}
+
+.calendar-controls {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.year-display {
+  margin: 0 1rem;
+  font-size: 1.5em;
+  font-weight: bold;
+}
+
+.calendar-grid-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  padding: 10px;
+}
+
+.month-container {
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.month-header {
+  text-align: center;
+  font-weight: bold;
+  padding: 0.5rem;
+  background-color: #f7f7f7;
+}
+
+.day-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 1px;
+  background-color: #ddd; /* Grid lines */
+}
+
+.day-header {
+  font-weight: bold;
+  text-align: center;
+  background-color: #f0f0f0;
+  padding: 2px;
+  font-size: 0.8em;
+}
+
+.day-cell {
+  background-color: #fff;
+  padding: 4px;
+  font-size: 0.9em;
+  position: relative;
+  min-height: 40px; /* Adjusted height */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start; /* Align day number to top */
+  align-items: flex-start; /* Align day number to left */
+}
+
+.day-number {
+  /* No specific styles needed now */
+}
+
+.booking-status-icon {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 1.2em;
+  font-weight: bold;
+  cursor: help; /* Indicates user can hover for info */
+}
+
+.day-cell.not-current-month {
+  color: #ccc;
+  background-color: #f9f9f9;
+}
+
+.day-cell.bookable {
+  cursor: pointer;
+}
+
+.day-cell.bookable:hover {
+  outline: 2px solid #007bff;
+}
+
+/* Add a cursor to all non-bookable booked cells */
+.day-cell.pending,
+.day-cell.confirmed,
+.day-cell.cancellation_pending {
+    cursor: help; /* Use help cursor to indicate a tooltip is available */
+}
+
+/* Base style for the triangle pseudo-element */
+.day-cell.pending::after,
+.day-cell.confirmed::after,
+.day-cell.cancellation_pending::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 0;
+  height: 0;
+  border-style: solid;
+}
+
+/* Green triangle for confirmed bookings */
+.day-cell.confirmed::after {
+  border-width: 0 12px 12px 0;
+  border-color: transparent #28a745 transparent transparent;
+}
+
+/* Orange triangle for pending bookings */
+.day-cell.pending::after {
+  border-width: 0 12px 12px 0;
+  border-color: transparent #ffc107 transparent transparent;
+}
+
+/* Red triangle for cancellation pending bookings */
+.day-cell.cancellation_pending::after {
+  border-width: 0 12px 12px 0;
+  border-color: transparent #dc3545 transparent transparent;
+}
+
+.day-cell.selection-start,
+.day-cell.selection-end {
+  background-color: #007bff !important;
+  color: white;
+  border-radius: 50%;
+}
+
+.day-cell.selection-mid {
+  background-color: #dbeafe !important;
+  color: #333;
+}

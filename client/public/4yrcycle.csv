@@ -1,0 +1,29 @@
+﻿,,From (Sun),To (Sat),Days,Weeks
+Year 1,Blue,08-Mar-26,18-Apr-26,41,6
+,Blue,19-Jul-26,01-Aug-26,13,2
+,Blue,06-Dec-26,26-Dec-26,20,3
+,Orange,28-Dec-25,03-Jan-26,6,1
+,Orange,24-May-26,06-Jun-26,13,2
+,Orange,27-Sep-26,10-Oct-26,13,2
+,Yellow,04-Jan-26,24-Jan-26,20,3
+,Yellow,07-Jun-26,04-Jul-26,27,4
+,Yellow,11-Oct-26,24-Oct-26,13,2
+,,,,,
+Weeks,Blue,0,,,
+,Orange,0,,,
+,Yellow,0,,,
+,,,,,
+,,From (Sun),To (Sat),Days,Weeks
+Year 2,Blue,18-Apr-27,22-May-27,34,5
+,Blue,01-Aug-27,25-Sep-27,55,8
+,Blue,,,0,0
+,Orange,24-Jan-27,06-Feb-27,13,2
+,Orange,,,0,0
+,Orange,24-Oct-27,06-Nov-27,13,2
+,Yellow,07-Feb-27,06-Mar-27,27,4
+,Yellow,04-Jul-27,17-Jul-27,13,2
+,Yellow,07-Nov-27,04-Dec-27,27,4
+,,,,,
+Weeks,Blue,0,,,
+,Orange,0,,,
+,Yellow,0,,,
