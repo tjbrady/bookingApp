@@ -2,7 +2,7 @@
   position: sticky;
   top: 20vh; /* Aligns with bottom of banner */
   margin-top: -5rem; /* Counteract parent padding to close gap */
-  background-color: #ffff00; /* Distinct background */
+  background-color: lightgoldenrodyellow; /* Distinct background */
   padding: 1rem;
   margin-bottom: 1rem;
   border-bottom: 1px solid #ccc;
