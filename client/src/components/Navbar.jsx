@@ -1,10 +1,12 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { ReportContext } from '../context/ReportContext';
 import './Navbar.css';
 
 const Navbar = () => {
   const { isAuthenticated, user, logout, loading } = useContext(AuthContext);
+  const { generateUserReport, reportLoading, reportError } = useContext(ReportContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -12,10 +14,22 @@ const Navbar = () => {
     navigate('/login');
   };
 
+  const handlePrintUserReportClick = async () => {
+    await generateUserReport();
+    if (reportError) {
+        alert(reportError);
+    }
+  };
+
   const authLinks = (
     <>
       <li className="navbar-dropdown-parent">
         <Link to="/bookings">My Bookings</Link>
+        <ul className="navbar-dropdown">
+          <li><button onClick={handlePrintUserReportClick} disabled={reportLoading}>
+              {reportLoading ? 'Generating...' : 'Print Report'}
+          </button></li>
+        </ul>
       </li>
       {user?.role === 'admin' && (
         <li className="navbar-dropdown-parent">
