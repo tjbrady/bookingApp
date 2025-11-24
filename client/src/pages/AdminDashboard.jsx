@@ -2,8 +2,6 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext.jsx';
-// No longer importing ReportContext as it's not used for reports here anymore.
-// No longer importing Schedule components.
 
 const MessageOfTheDayManager = () => {
     const [message, setMessage] = useState('');
