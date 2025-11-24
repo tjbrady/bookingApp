@@ -148,6 +148,30 @@ const AdminDashboard = () => {
     }
   };
 
+  const [exporting, setExporting] = useState(false);
+
+  const handleExport = async (reportName, apiUrl) => {
+    setExporting(true);
+    try {
+      const response = await api.get(apiUrl, { responseType: 'blob' });
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `${reportName}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+    } catch (err) {
+      setError(`Failed to export ${reportName}.`);
+      console.error(err);
+    } finally {
+      setExporting(false);
+    }
+  };
+
   const renderUserActions = (u) => {
     switch (u.status) {
       case 'pending':
@@ -176,6 +200,25 @@ const AdminDashboard = () => {
   return (
     <div>
       <h2>Admin Dashboard</h2>
+
+      <section style={{ border: '1px solid #ccc', borderRadius: '4px', padding: '1rem', marginBottom: '2rem' }}>
+        <h3>Reports</h3>
+        <p>Export different data sets as CSV files.</p>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button onClick={() => handleExport('booking_report', '/admin/reports/bookings')} disabled={exporting}>
+            {exporting ? 'Exporting...' : 'Export Booking Report (CSV)'}
+          </button>
+          <button onClick={() => handleExport('user_report', '/admin/reports/users')} disabled={exporting}>
+            {exporting ? 'Exporting...' : 'Export User Report (CSV)'}
+          </button>
+          <button onClick={() => handleExport('4yr_summary_report', '/admin/reports/schedule-summary')} disabled={exporting}>
+            {exporting ? 'Exporting...' : 'Export 4yr Summary Report (CSV)'}
+          </button>
+          <button onClick={() => handleExport('4yr_detail_report', '/admin/reports/schedule-detail')} disabled={exporting}>
+            {exporting ? 'Exporting...' : 'Export 4yr Detail Report (CSV)'}
+          </button>
+        </div>
+      </section>
       
       <div style={{ marginTop: '1rem', marginBottom: '1rem', padding: '1rem', border: '2px solid red', borderRadius: '4px' }}>
           <h4 style={{marginTop: 0, color: 'red'}}>Danger Zone</h4>

@@ -1,5 +1,7 @@
 const User = require('../models/user.model');
 const Booking = require('../models/booking.model');
+const ColorSchedule = require('../models/colorSchedule.model');
+const { Parser } = require('json2csv');
 
 // @route   GET /api/admin/users
 // @desc    Get all users
@@ -100,10 +102,99 @@ const deleteBookingsByYear = async (req, res) => {
   }
 };
 
+// --- Reporting Functions ---
+
+const exportBookings = async (req, res) => {
+  try {
+    const bookings = await Booking.find().populate('user', 'username email').lean();
+    const fields = [
+      { label: 'Booking ID', value: '_id' },
+      { label: 'User ID', value: 'user._id' },
+      { label: 'Username', value: 'user.username' },
+      { label: 'Email', value: 'user.email' },
+      { label: 'From Date', value: 'dateFrom' },
+      { label: 'To Date', value: 'dateTo' },
+      { label: 'Status', value: 'status' },
+      { label: 'Requested At', value: 'createdAt' },
+    ];
+    const json2csvParser = new Parser({ fields });
+    const csv = json2csvParser.parse(bookings);
+    res.header('Content-Type', 'text/csv');
+    res.attachment('booking_report.csv');
+    res.send(csv);
+  } catch (err) {
+    console.error('Error exporting bookings:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+const exportUsers = async (req, res) => {
+  try {
+    const users = await User.find().select('-password').lean();
+    const fields = ['_id', 'username', 'email', 'role', 'status', 'createdAt'];
+    const json2csvParser = new Parser({ fields });
+    const csv = json2csvParser.parse(users);
+    res.header('Content-Type', 'text/csv');
+    res.attachment('user_report.csv');
+    res.send(csv);
+  } catch (err) {
+    console.error('Error exporting users:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+const exportScheduleDetail = async (req, res) => {
+  try {
+    const schedule = await ColorSchedule.find().sort({ startDate: 1 }).lean();
+    const fields = ['color', 'startDate', 'endDate'];
+    const json2csvParser = new Parser({ fields });
+    const csv = json2csvParser.parse(schedule);
+    res.header('Content-Type', 'text/csv');
+    res.attachment('4yr_detail_report.csv');
+    res.send(csv);
+  } catch (err) {
+    console.error('Error exporting schedule detail:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
+const exportScheduleSummary = async (req, res) => {
+  try {
+    const schedule = await ColorSchedule.find().lean();
+    const summary = {};
+
+    schedule.forEach(entry => {
+      const year = new Date(entry.startDate).getFullYear();
+      if (!summary[year]) {
+        summary[year] = { year, Blue: 0, Red: 0, Orange: 0, Yellow: 0, Green: 0 };
+      }
+      if (summary[year][entry.color] !== undefined) {
+        // Simple count of blocks
+        summary[year][entry.color]++;
+      }
+    });
+
+    const summaryArray = Object.values(summary).sort((a, b) => a.year - b.year);
+    const fields = ['year', 'Blue', 'Red', 'Orange', 'Yellow', 'Green'];
+    const json2csvParser = new Parser({ fields });
+    const csv = json2csvParser.parse(summaryArray);
+    res.header('Content-Type', 'text/csv');
+    res.attachment('4yr_summary_report.csv');
+    res.send(csv);
+  } catch (err) {
+    console.error('Error exporting schedule summary:', err.message);
+    res.status(500).send('Server Error');
+  }
+};
+
 module.exports = {
   getUsers,
   updateUser,
   getAllBookings,
   deleteAllBookings,
   deleteBookingsByYear,
+  exportBookings,
+  exportUsers,
+  exportScheduleDetail,
+  exportScheduleSummary,
 };

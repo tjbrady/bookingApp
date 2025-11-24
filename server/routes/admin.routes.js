@@ -1,6 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const { getUsers, updateUser, getAllBookings, deleteAllBookings, deleteBookingsByYear } = require('../controllers/admin.controller');
+const { 
+  getUsers, 
+  updateUser, 
+  getAllBookings, 
+  deleteAllBookings, 
+  deleteBookingsByYear,
+  exportBookings,
+  exportUsers,
+  exportScheduleSummary,
+  exportScheduleDetail
+} = require('../controllers/admin.controller');
 const { getSchedule, setSchedule, saveScheduleByYear } = require('../controllers/schedule.controller');
 const { updateSetting } = require('../controllers/setting.controller');
 const auth = require('../middleware/auth.middleware');
@@ -8,6 +18,12 @@ const admin = require('../middleware/admin.middleware');
 
 // All routes in this file are protected and for admins only
 router.use(auth, admin);
+
+// ----- Report Routes -----
+router.get('/reports/bookings', exportBookings);
+router.get('/reports/users', exportUsers);
+router.get('/reports/schedule-summary', exportScheduleSummary);
+router.get('/reports/schedule-detail', exportScheduleDetail);
 
 // ----- User Management Routes -----
 router.get('/users', getUsers);
