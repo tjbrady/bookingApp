@@ -186,14 +186,19 @@ const exportScheduleSummary = async (req, res) => {
     schedule.forEach(entry => {
       const year = new Date(entry.startDate).getUTCFullYear();
       if (colors.includes(entry.color) && years.includes(year)) {
-        const startDate = new Date(entry.startDate);
+        // Use iterative counting to match frontend logic and avoid rounding errors
+        let weekCount = 0;
+        let currentDate = new Date(entry.startDate);
         const endDate = new Date(entry.endDate);
-        const diffTime = Math.abs(endDate - startDate);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Inclusive
-        const diffWeeks = Math.round(diffDays / 7);
+        while(currentDate <= endDate) {
+            if (currentDate.getUTCFullYear() === year) {
+                weekCount++;
+            }
+            currentDate.setUTCDate(currentDate.getUTCDate() + 7);
+        }
 
-        summary[entry.color][year] += diffWeeks;
-        totals[year] += diffWeeks;
+        summary[entry.color][year] += weekCount;
+        totals[year] += weekCount;
       }
     });
 
