@@ -24,7 +24,6 @@
   padding: 1rem;
   border-radius: 8px; /* Soften corners */
   flex-shrink: 0; /* Prevent shrinking in flex container */
-  max-width: 400px; /* Limit width */
   font-size: 0.9em; /* Slightly smaller text */
 }
 
@@ -159,4 +158,26 @@
 .day-cell.selection-mid {
   background-color: #dbeafe !important;
   color: #333;
+}
+
+/* Styles for the custom selection text */
+.selection-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  font-size: 0.7em; /* Adjust as needed */
+  line-height: 1.1;
+  color: white; /* To stand out on blue background */
+  font-weight: bold;
+  padding: 2px;
+  box-sizing: border-box; /* Include padding in element's total width and height */
+  width: 100%; /* Take full width of parent */
+}
+
+/* Ensure the day number is not visible when selection-text is present */
+.day-cell.selection-start .day-number,
+.day-cell.selection-end .day-number {
+    display: none;
 }

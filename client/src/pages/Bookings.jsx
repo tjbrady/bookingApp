@@ -12,6 +12,16 @@ const colourMap = { // Changed to colourMap
   Yellow: '#ffff00',
   Green: '#90ee90',
 };
+
+// Helper function to format dates as '23Nov25'
+const formatDate = (dateString) => {
+  const date = new Date(dateString);
+  const day = date.getUTCDate();
+  const month = date.toLocaleString('en-GB', { month: 'short', timeZone: 'UTC' });
+  const year = date.getUTCFullYear().toString().slice(-2);
+  return `${day}${month}${year}`;
+};
+
 const bookableColours = ['Blue', 'Orange', 'Yellow']; // Changed to bookableColours
 
 const getStartOfWeek = (date) => {
@@ -204,7 +214,13 @@ const Bookings = () => {
               onClick={() => handleDayClick(date, booking)}
               style={{ backgroundColor: colour ? colourMap[colour] : null }}
             >
-                <div className="day-number">{day}</div>
+                {selection.start && date.getTime() === selection.start.getTime() ? (
+                  <div className="selection-text">From Night of {day}</div>
+                ) : selection.end && date.getTime() === selection.end.getTime() ? (
+                  <div className="selection-text">To Night of {day}</div>
+                ) : (
+                  <div className="day-number">{day}</div>
+                )}
                 {booking && (
                     <div className="booking-status-icon" title={`Status: ${booking.status}\nUser: ${booking.username}`}>
                         {booking.status === 'confirmed' ? '✓' : booking.status === 'pending' ? '?' : ''}
@@ -262,7 +278,7 @@ const Bookings = () => {
                 <ul style={{marginBottom: '1rem', marginTop: '0', listStyle: 'none', padding: 0}}>
                   {myBookings.map((booking) => (
                     <li key={booking._id} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                      {new Date(booking.dateFrom).toLocaleDateString()} to {new Date(booking.dateTo).toLocaleDateString()} - <strong>{booking.status}</strong>
+                      Night of {formatDate(booking.dateFrom)} to Night of {formatDate(booking.dateTo)} - <strong>{booking.status}</strong>
                       {(booking.status === 'pending' || booking.status === 'confirmed') && (
                           <button onClick={() => handleCancelBooking(booking._id, booking.status)} style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px' }}>
                               {booking.status === 'pending' ? 'Cancel' : 'Request Cancellation'}
@@ -278,11 +294,11 @@ const Bookings = () => {
             </div>
 
             {/* Column 3: Instructions */}
-            <div style={{ flex: '1 1 300px' }} className="instructions-box">
+            <div style={{ flex: '1 1 450px' }} className="instructions-box">
               <h3 style={{ margin: '0', padding: 0, lineHeight: 1.2 }}>How to Request a Booking:</h3>
               <ul style={{ listStyleType: 'none', padding: '0', margin: '0' }}>
-                <li style={{ marginBottom: '0.5rem' }}>• Click a start date on the calendar.</li>
-                <li style={{ marginBottom: '0.5rem' }}>• Click an end date to complete your selection.</li>
+                <li style={{ marginBottom: '0.5rem' }}>• Click your first Night to start a booking.</li>
+                <li style={{ marginBottom: '0.5rem' }}>• Click your last Night to complete the selection.</li>
                 <li style={{ marginBottom: '0.5rem' }}>• Use the "Clear Selection" button if incorrect.</li>
                 <li>• Click "Request Booking" to send for approval.</li>
               </ul>
