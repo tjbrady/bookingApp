@@ -146,9 +146,21 @@ const exportUsers = async (req, res) => {
 const exportScheduleDetail = async (req, res) => {
   try {
     const schedule = await ColorSchedule.find().sort({ startDate: 1 }).lean();
-    const fields = ['color', 'startDate', 'endDate'];
+
+    // Format the dates before converting to CSV
+    const formattedSchedule = schedule.map(entry => ({
+      ...entry,
+      startDate: entry.startDate.toISOString().split('T')[0],
+      endDate: entry.endDate.toISOString().split('T')[0],
+    }));
+
+    const fields = [
+        { label: 'colour', value: 'color' },
+        { label: 'startDate', value: 'startDate' },
+        { label: 'endDate', value: 'endDate' }
+    ];
     const json2csvParser = new Parser({ fields });
-    const csv = json2csvParser.parse(schedule);
+    const csv = json2csvParser.parse(formattedSchedule);
     res.header('Content-Type', 'text/csv');
     res.attachment('4yr_detail_report.csv');
     res.send(csv);
@@ -161,23 +173,35 @@ const exportScheduleDetail = async (req, res) => {
 const exportScheduleSummary = async (req, res) => {
   try {
     const schedule = await ColorSchedule.find().lean();
+    const years = [2026, 2027, 2028, 2029];
+    const colors = ['Blue', 'Red', 'Orange', 'Yellow', 'Green'];
+    
     const summary = {};
+    colors.forEach(color => {
+      summary[color] = { Colour: color, '2026': 0, '2027': 0, '2028': 0, '2029': 0 };
+    });
+
+    const totals = { Colour: 'Totals', '2026': 0, '2027': 0, '2028': 0, '2029': 0 };
 
     schedule.forEach(entry => {
-      const year = new Date(entry.startDate).getFullYear();
-      if (!summary[year]) {
-        summary[year] = { year, Blue: 0, Red: 0, Orange: 0, Yellow: 0, Green: 0 };
-      }
-      if (summary[year][entry.color] !== undefined) {
-        // Simple count of blocks
-        summary[year][entry.color]++;
+      const year = new Date(entry.startDate).getUTCFullYear();
+      if (colors.includes(entry.color) && years.includes(year)) {
+        const startDate = new Date(entry.startDate);
+        const endDate = new Date(entry.endDate);
+        const diffTime = Math.abs(endDate - startDate);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Inclusive
+        const diffWeeks = Math.round(diffDays / 7);
+
+        summary[entry.color][year] += diffWeeks;
+        totals[year] += diffWeeks;
       }
     });
 
-    const summaryArray = Object.values(summary).sort((a, b) => a.year - b.year);
-    const fields = ['year', 'Blue', 'Red', 'Orange', 'Yellow', 'Green'];
+    const summaryArray = [...Object.values(summary), totals];
+    const fields = ['Colour', '2026', '2027', '2028', '2029'];
     const json2csvParser = new Parser({ fields });
     const csv = json2csvParser.parse(summaryArray);
+
     res.header('Content-Type', 'text/csv');
     res.attachment('4yr_summary_report.csv');
     res.send(csv);
