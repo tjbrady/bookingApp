@@ -8,7 +8,7 @@ function App() {
     <div>
       <header className="app-header">
         <video className="header-video" autoPlay loop muted playsInline>
-         <source src="/banner01.mov" type="video/mp4" />
+         <source src="/banner02.mp4" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
         <div className="header-navbar">

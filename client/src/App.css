@@ -9,7 +9,7 @@
 .header-video {
   width: 100%;
   height: 100%;
-  object-fit: contain; /* This will ensure the whole video is visible, letterboxed if necessary */
+  object-fit: cover; /* This will ensure the video fills the container, cropping if necessary */
   object-position: center; /* Center the video within the header */
   position: relative;
   top: 0;
@@ -27,6 +27,7 @@
 }
 
 .banner-text {
+  font-family: 'Josefin Sans', sans-serif;
   position: absolute;
   top: 56%; /* Nudged higher to sit halfway over the animation */
   left: 50%; /* Center horizontally */
