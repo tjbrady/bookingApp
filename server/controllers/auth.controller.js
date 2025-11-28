@@ -1,6 +1,7 @@
 const User = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const sendEmail = require('../services/email.service');
 
 const register = async (req, res) => {
   const { username, email, password } = req.body;
@@ -21,6 +22,22 @@ const register = async (req, res) => {
     user.password = await bcrypt.hash(password, salt);
 
     await user.save();
+
+    // Notify Admins via Email
+    const admins = await User.find({ role: 'admin' });
+    const adminEmails = admins.map(admin => admin.email);
+
+    if (adminEmails.length > 0) {
+      console.log('Sending registration notification to admins:', adminEmails);
+      const subject = 'New User Registration Pending Approval';
+      const text = `A new user has registered.\n\nUsername: ${username}\nEmail: ${email}\n\nPlease log in to the admin dashboard to approve or reject this user.`;
+      const html = `<p>A new user has registered and is awaiting approval.</p>
+                    <p><strong>Username:</strong> ${username}</p>
+                    <p><strong>Email:</strong> ${email}</p>
+                    <p>Please log in to the admin dashboard to manage this request.</p>`;
+      
+      adminEmails.forEach(email => sendEmail(email, subject, text, html));
+    }
 
     res.status(201).json({ msg: 'Registration successful. Your account is pending admin approval.' });
   } catch (err) {

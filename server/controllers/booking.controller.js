@@ -1,7 +1,9 @@
+require('dotenv').config({ path: './.env' }); // Ensure environment variables are loaded
 const Booking = require('../models/booking.model');
 const ColorSchedule = require('../models/colorSchedule.model');
 const User = require('../models/user.model');
 const Notification = require('../models/notification.model');
+const sendEmail = require('../services/email.service');
 
 // @desc    Get bookings for the logged-in user
 const getMyBookings = async (req, res) => {
@@ -29,6 +31,7 @@ const getPublicBookings = async (req, res) => {
 
 // @desc    Create a new booking request
 const createBooking = async (req, res) => {
+  console.log('--> createBooking controller HIT'); // Debug Log
   const { service, dateFrom, dateTo } = req.body;
 
   try {
@@ -71,6 +74,25 @@ const createBooking = async (req, res) => {
     });
 
     const booking = await newBooking.save();
+
+    // Notify Admins via Email
+    const admins = await User.find({ role: 'admin' });
+    const adminEmails = admins.map(admin => admin.email);
+    const requestingUser = await User.findById(req.user.id); // Get username
+
+    if (adminEmails.length > 0) {
+      console.log('Attempting to send emails to:', adminEmails);
+      console.log('EMAIL_USER from .env:', process.env.EMAIL_USER); // Debugging .env variable access
+      const subject = 'New Booking Request';
+      const text = `User ${requestingUser.username} has requested a booking from ${new Date(dateFrom).toDateString()} to ${new Date(dateTo).toDateString()}. Please check the dashboard to approve or reject.`;
+      const html = `<p>User <strong>${requestingUser.username}</strong> has requested a booking.</p>
+                    <p><strong>Dates:</strong> ${new Date(dateFrom).toDateString()} - ${new Date(dateTo).toDateString()}</p>
+                    <p>Please log in to the admin dashboard to manage this request.</p>`;
+      
+      // Send to all admins (individually or as BCC, loop is fine for low volume)
+      adminEmails.forEach(email => sendEmail(email, subject, text, html));
+    }
+
     res.status(201).json(booking);
   } catch (err) {
     console.error(err.message);
