@@ -50,7 +50,7 @@ const createBooking = async (req, res) => {
     
     const conflictingBooking = await Booking.findOne({
       service,
-      status: 'confirmed', // Only confirmed bookings cause conflict
+      status: { $in: ['confirmed', 'pending', 'cancellation_pending'] },
       $or: [
         { dateFrom: { $lte: dateFrom }, dateTo: { $gt: dateFrom } },
         { dateFrom: { $lt: dateTo }, dateTo: { $gte: dateTo } },
@@ -59,7 +59,7 @@ const createBooking = async (req, res) => {
     });
 
     if (conflictingBooking) {
-      return res.status(400).json({ msg: 'These dates conflict with an existing confirmed booking.' });
+      return res.status(400).json({ msg: 'These dates conflict with an existing confirmed or pending booking.' });
     }
 
     const newBooking = new Booking({

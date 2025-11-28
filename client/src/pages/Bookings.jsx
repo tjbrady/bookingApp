@@ -103,7 +103,7 @@ const Bookings = () => {
   }, [publicBookings]);
 
   const handleDayClick = (date, booking) => {
-    if (booking?.status === 'confirmed') return;
+    if (booking && ['confirmed', 'pending', 'cancellation_pending'].includes(booking.status)) return;
 
     if (!selection.start || (selection.start && selection.end)) {
       setSelection({ start: date, end: null });
@@ -124,8 +124,9 @@ const Bookings = () => {
         const dateKey = current.toISOString().substring(0, 10);
         const weekStartKey = getStartOfWeek(current).toISOString().substring(0, 10);
         
-        if (bookingMap.get(dateKey)?.status === 'confirmed') {
-            alert('Error: Your selection overlaps with a confirmed booking.');
+        const bookingStatus = bookingMap.get(dateKey)?.status;
+        if (bookingStatus && ['confirmed', 'pending', 'cancellation_pending'].includes(bookingStatus)) {
+            alert('Error: Your selection overlaps with an existing confirmed or pending booking.');
             return;
         }
 
