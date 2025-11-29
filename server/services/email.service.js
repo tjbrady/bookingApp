@@ -28,7 +28,14 @@ const sendEmail = async (to, subject, text, html) => {
     }
 
     // Create a transporter
-    const transporter = nodemailer.createTransport(transportConfig);
+    const transporter = nodemailer.createTransport({
+      ...transportConfig,
+      logger: true, // Log to console
+      debug: true,  // Include SMTP traffic in logs
+      connectionTimeout: 10000, // 10 seconds timeout
+      greetingTimeout: 10000,
+      socketTimeout: 10000
+    });
 
     const mailOptions = {
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
