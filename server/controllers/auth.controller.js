@@ -36,7 +36,10 @@ const register = async (req, res) => {
                     <p><strong>Email:</strong> ${email}</p>
                     <p>Please log in to the admin dashboard to manage this request.</p>`;
       
-      adminEmails.forEach(email => sendEmail(email, subject, text, html));
+      // Send emails sequentially to avoid rate limits
+      for (const email of adminEmails) {
+        await sendEmail(email, subject, text, html);
+      }
     }
 
     res.status(201).json({ msg: 'Registration successful. Your account is pending admin approval.' });

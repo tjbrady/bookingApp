@@ -89,8 +89,10 @@ const createBooking = async (req, res) => {
                     <p><strong>Dates:</strong> ${new Date(dateFrom).toDateString()} - ${new Date(dateTo).toDateString()}</p>
                     <p>Please log in to the admin dashboard to manage this request.</p>`;
       
-      // Send to all admins (individually or as BCC, loop is fine for low volume)
-      adminEmails.forEach(email => sendEmail(email, subject, text, html));
+      // Send to all admins (sequentially to avoid rate limits)
+      for (const email of adminEmails) {
+        await sendEmail(email, subject, text, html);
+      }
     }
 
     res.status(201).json(booking);
