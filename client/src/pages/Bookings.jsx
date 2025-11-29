@@ -93,7 +93,7 @@ const Bookings = () => {
         const endDate = new Date(booking.dateTo);
         while (current <= endDate) {
             map.set(current.toISOString().substring(0, 10), {
-                username: booking.user.username,
+                username: booking.user?.username || 'Unknown',
                 status: booking.status,
             });
             current.setDate(current.getDate() + 1);
