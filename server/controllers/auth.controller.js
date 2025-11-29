@@ -36,9 +36,11 @@ const register = async (req, res) => {
                     <p><strong>Email:</strong> ${email}</p>
                     <p>Please log in to the admin dashboard to manage this request.</p>`;
       
-      // Send emails sequentially to avoid rate limits
+      // Send emails sequentially with delay to avoid rate limits
       for (const email of adminEmails) {
         await sendEmail(email, subject, text, html);
+        // Wait 1 second between emails to respect Resend's 2 req/sec limit
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
     }
 
