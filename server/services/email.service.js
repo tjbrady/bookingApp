@@ -2,18 +2,28 @@ const nodemailer = require('nodemailer');
 
 const sendEmail = async (to, subject, text, html) => {
   try {
-    // Create a transporter
-    // For Gmail, you might need to use an App Password if 2FA is enabled.
-    const transporter = nodemailer.createTransport({
-      service: process.env.EMAIL_SERVICE, // e.g., 'gmail'
-      host: process.env.EMAIL_HOST,       // e.g., 'smtp.gmail.com' (if not using 'service')
-      port: process.env.EMAIL_PORT,       // e.g., 587
-      secure: process.env.EMAIL_SECURE === 'true', // true for 465, false for other ports
+    let transportConfig = {
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
       },
-    });
+    };
+
+    // Prioritize explicit Host/Port settings over 'service'
+    if (process.env.EMAIL_HOST) {
+      transportConfig.host = process.env.EMAIL_HOST;
+      transportConfig.port = process.env.EMAIL_PORT; // e.g., 587
+      transportConfig.secure = process.env.EMAIL_SECURE === 'true'; // true for 465, false for 587
+      console.log(`Using Custom SMTP Config: Host=${transportConfig.host}, Port=${transportConfig.port}, Secure=${transportConfig.secure}`);
+    } else if (process.env.EMAIL_SERVICE) {
+      transportConfig.service = process.env.EMAIL_SERVICE; // e.g., 'gmail'
+      console.log(`Using Service Config: ${transportConfig.service}`);
+    } else {
+      console.warn('No EMAIL_HOST or EMAIL_SERVICE defined in environment variables.');
+    }
+
+    // Create a transporter
+    const transporter = nodemailer.createTransport(transportConfig);
 
     const mailOptions = {
       from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
@@ -23,6 +33,7 @@ const sendEmail = async (to, subject, text, html) => {
       html,
     };
 
+    console.log(`Attempting to send email to: ${to}`);
     const info = await transporter.sendMail(mailOptions);
     console.log('Email sent: ' + info.response);
     return info;
