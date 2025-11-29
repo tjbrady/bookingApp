@@ -12,8 +12,13 @@ const sendEmail = async (to, subject, text, html) => {
     // Prioritize explicit Host/Port settings over 'service'
     if (process.env.EMAIL_HOST) {
       transportConfig.host = process.env.EMAIL_HOST;
-      transportConfig.port = process.env.EMAIL_PORT; // e.g., 587
-      transportConfig.secure = process.env.EMAIL_SECURE === 'true'; // true for 465, false for 587
+      transportConfig.port = Number(process.env.EMAIL_PORT) || 587;
+      
+      // Smart secure detection: True if env var says so (case-insensitive) OR if port is 465
+      const secureEnv = process.env.EMAIL_SECURE ? String(process.env.EMAIL_SECURE).toLowerCase() : 'false';
+      transportConfig.secure = secureEnv === 'true' || transportConfig.port === 465;
+
+      console.log(`Raw EMAIL_SECURE env: '${process.env.EMAIL_SECURE}'`);
       console.log(`Using Custom SMTP Config: Host=${transportConfig.host}, Port=${transportConfig.port}, Secure=${transportConfig.secure}`);
     } else if (process.env.EMAIL_SERVICE) {
       transportConfig.service = process.env.EMAIL_SERVICE; // e.g., 'gmail'
