@@ -30,11 +30,12 @@ const register = async (req, res) => {
     if (adminEmails.length > 0) {
       console.log('Sending registration notification to admins:', adminEmails);
       const subject = 'New User Registration Pending Approval';
-      const text = `A new user has registered.\n\nUsername: ${username}\nEmail: ${email}\n\nPlease log in to the admin dashboard to approve or reject this user.`;
+      const dashboardLink = 'http://bookingapp-static.onrender.com';
+      const text = `A new user has registered.\n\nUsername: ${username}\nEmail: ${email}\n\nPlease log in to the admin dashboard to approve or reject this user: ${dashboardLink}`;
       const html = `<p>A new user has registered and is awaiting approval.</p>
                     <p><strong>Username:</strong> ${username}</p>
                     <p><strong>Email:</strong> ${email}</p>
-                    <p>Please log in to the admin dashboard to manage this request.</p>`;
+                    <p>Please <a href="${dashboardLink}">log in to the admin dashboard</a> to manage this request.</p>`;
       
       // Send emails sequentially with delay to avoid rate limits
       for (const email of adminEmails) {

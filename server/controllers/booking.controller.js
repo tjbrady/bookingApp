@@ -84,10 +84,11 @@ const createBooking = async (req, res) => {
       console.log('Attempting to send emails to:', adminEmails);
       console.log('EMAIL_USER from .env:', process.env.EMAIL_USER); // Debugging .env variable access
       const subject = 'New Booking Request';
-      const text = `User ${requestingUser.username} has requested a booking from ${new Date(dateFrom).toDateString()} to ${new Date(dateTo).toDateString()}. Please check the dashboard to approve or reject.`;
+      const dashboardLink = 'http://bookingapp-static.onrender.com';
+      const text = `User ${requestingUser.username} has requested a booking from ${new Date(dateFrom).toDateString()} to ${new Date(dateTo).toDateString()}. Please log in to the admin dashboard to approve or reject: ${dashboardLink}`;
       const html = `<p>User <strong>${requestingUser.username}</strong> has requested a booking.</p>
                     <p><strong>Dates:</strong> ${new Date(dateFrom).toDateString()} - ${new Date(dateTo).toDateString()}</p>
-                    <p>Please log in to the admin dashboard to manage this request.</p>`;
+                    <p>Please <a href="${dashboardLink}">log in to the admin dashboard</a> to manage this request.</p>`;
       
       // Send to all admins (sequentially with delay to avoid rate limits)
       for (const email of adminEmails) {
