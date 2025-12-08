@@ -33,7 +33,7 @@ const transformScheduleToStructured = (flatSchedule) => {
         flatSchedule.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
 
         flatSchedule.forEach(entry => {
-            const year = new Date(entry.startDate).getFullYear();
+            const year = new Date(entry.startDate).getUTCFullYear();
             if (structured[year] && structured[year][entry.color]) {
                 const index = colorRowIndex[year][entry.color];
                 if (index < structured[year][entry.color].length) {

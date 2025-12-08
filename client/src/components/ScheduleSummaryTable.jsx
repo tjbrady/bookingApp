@@ -31,12 +31,12 @@ const ScheduleSummaryTable = ({ schedule }) => {
                     
                     // This loop counts each week within the range
                     while(currentDate <= endDate) {
-                        const currentYear = currentDate.getFullYear();
+                        const currentYear = currentDate.getUTCFullYear();
                         if (currentYear === yearNum) {
                             counts[color][yearNum]++;
                         }
-                        // Move to the next week
-                        currentDate.setDate(currentDate.getDate() + 7);
+                        // Move to the next week safely using UTC
+                        currentDate.setUTCDate(currentDate.getUTCDate() + 7);
                     }
                   } catch (e) {
                       console.error("Invalid date found in schedule for summary", e);

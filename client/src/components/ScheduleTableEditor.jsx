@@ -30,7 +30,7 @@ const ScheduleTableEditor = ({ schedule, setSchedule, onSave, loading }) => {
           </tr>
         </thead>
         <tbody>
-          {colors.map(color => (
+          {colors.map((color, colorIndex) => (
             <React.Fragment key={color}>
               {/* Create 3 rows for each color */}
               {[0, 1, 2].map(index => (
@@ -42,12 +42,20 @@ const ScheduleTableEditor = ({ schedule, setSchedule, onSave, loading }) => {
                     </td>
                   )}
                   {/* Year columns */}
-                  {years.map(year => (
+                  {years.map((year, yearIndex) => {
+                    // Calculate tabIndex to go down the column (by year) instead of across
+                    // 30 inputs per year (5 colors * 3 blocks * 2 inputs)
+                    // 6 inputs per color (3 blocks * 2 inputs)
+                    // 2 inputs per block (start + end)
+                    const baseTabIndex = 1 + (yearIndex * 30) + (colorIndex * 6) + (index * 2);
+                    
+                    return (
                     <td key={`${color}-${year}-${index}`} style={{ padding: '4px' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                         <label style={{ fontSize: '0.8em' }}>Start:</label>
                         <input
                           type="date"
+                          tabIndex={baseTabIndex}
                           value={schedule[year]?.[color]?.[index]?.startDate || ''}
                           onChange={(e) => handleDateChange(year, color, index, 'startDate', e.target.value)}
                           style={{ padding: '4px', fontSize: '0.9em' }}
@@ -55,13 +63,15 @@ const ScheduleTableEditor = ({ schedule, setSchedule, onSave, loading }) => {
                         <label style={{ fontSize: '0.8em', marginTop: '4px' }}>End:</label>
                         <input
                           type="date"
+                          tabIndex={baseTabIndex + 1}
                           value={schedule[year]?.[color]?.[index]?.endDate || ''}
                           onChange={(e) => handleDateChange(year, color, index, 'endDate', e.target.value)}
                           style={{ padding: '4px', fontSize: '0.9em' }}
                         />
                       </div>
                     </td>
-                  ))}
+                  );
+                  })}
                 </tr>
               ))}
             </React.Fragment>
