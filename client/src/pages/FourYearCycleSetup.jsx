@@ -22,7 +22,12 @@ const transformScheduleToStructured = (flatSchedule) => {
     });
 
     const colorRowIndex = {};
-    colors.forEach(color => colorRowIndex[color] = 0);
+    years.forEach(year => {
+        colorRowIndex[year] = {};
+        colors.forEach(color => {
+            colorRowIndex[year][color] = 0;
+        });
+    });
     
     if(Array.isArray(flatSchedule)) {
         flatSchedule.sort((a, b) => new Date(a.startDate) - new Date(b.startDate));
@@ -30,13 +35,13 @@ const transformScheduleToStructured = (flatSchedule) => {
         flatSchedule.forEach(entry => {
             const year = new Date(entry.startDate).getFullYear();
             if (structured[year] && structured[year][entry.color]) {
-                const index = colorRowIndex[entry.color] || 0;
+                const index = colorRowIndex[year][entry.color];
                 if (index < structured[year][entry.color].length) {
                     structured[year][entry.color][index] = {
                         startDate: new Date(entry.startDate).toISOString().substring(0, 10),
                         endDate: new Date(entry.endDate).toISOString().substring(0, 10),
                     };
-                    colorRowIndex[entry.color]++;
+                    colorRowIndex[year][entry.color]++;
                 }
             }
         });
