@@ -53,6 +53,31 @@ const updateUser = async (req, res) => {
   }
 };
 
+// @route   DELETE /api/admin/users/:id
+// @desc    Delete a user and their associated bookings
+// @access  Admin
+const deleteUser = async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+
+    // Delete associated bookings first
+    await Booking.deleteMany({ user: userId });
+
+    // Delete the user
+    await User.findByIdAndDelete(userId);
+
+    res.json({ msg: 'User and associated bookings deleted' });
+  } catch (err) {
+    console.error('Error in deleteUser:', err.message);
+    res.status(500).json({ msg: 'Server Error deleting user' });
+  }
+};
+
 
 // @route   GET /api/admin/bookings
 // @desc    Get all bookings
@@ -219,6 +244,7 @@ const exportScheduleSummary = async (req, res) => {
 module.exports = {
   getUsers,
   updateUser,
+  deleteUser,
   getAllBookings,
   deleteAllBookings,
   deleteBookingsByYear,

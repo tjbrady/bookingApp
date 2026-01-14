@@ -93,6 +93,20 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleDeleteUser = async (id, username) => {
+    if (window.confirm(`ARE YOU SURE you want to delete user "${username}"? This will also DELETE ALL BOOKINGS associated with this user. This action cannot be undone.`)) {
+      try {
+        await api.delete(`/admin/users/${id}`);
+        setUsers(users.filter(u => u._id !== id));
+        // Also remove their bookings from the local state to reflect the change immediately
+        setBookings(bookings.filter(b => b.user?._id !== id));
+      } catch (err) {
+        setError(`Failed to delete user ${username}`);
+        console.error(err);
+      }
+    }
+  };
+
   const handleUpdateBookingStatus = async (id, status) => {
     try {
       const res = await api.put(`/bookings/${id}`, { status });
@@ -171,21 +185,32 @@ const AdminDashboard = () => {
   };
 
   const renderUserActions = (u) => {
+    let actionButtons = null;
     switch (u.status) {
       case 'pending':
-        return (
+        actionButtons = (
           <>
             <button onClick={() => handleUpdateUser(u._id, 'status', 'active')} style={{ marginRight: '5px' }}>Approve</button>
-            <button onClick={() => handleUpdateUser(u._id, 'status', 'rejected')}>Reject</button>
+            <button onClick={() => handleUpdateUser(u._id, 'status', 'rejected')} style={{ marginRight: '5px' }}>Reject</button>
           </>
         );
+        break;
       case 'active':
-        return <button onClick={() => handleUpdateUser(u._id, 'status', 'rejected')}>Revoke Access</button>;
+        actionButtons = <button onClick={() => handleUpdateUser(u._id, 'status', 'rejected')} style={{ marginRight: '5px' }}>Revoke Access</button>;
+        break;
       case 'rejected':
-        return <button onClick={() => handleUpdateUser(u._id, 'status', 'active')}>Re-Approve</button>;
+        actionButtons = <button onClick={() => handleUpdateUser(u._id, 'status', 'active')} style={{ marginRight: '5px' }}>Re-Approve</button>;
+        break;
       default:
-        return null;
+        break;
     }
+
+    return (
+        <>
+            {actionButtons}
+            <button onClick={() => handleDeleteUser(u._id, u.username)} style={{ backgroundColor: 'red', color: 'white', border: 'none', padding: '1px 6px', borderRadius: '4px' }}>Delete</button>
+        </>
+    );
   };
 
   if (loading || loadingData) return <p>Loading dashboard...</p>;

@@ -3,6 +3,7 @@ const router = express.Router();
 const { 
   getUsers, 
   updateUser, 
+  deleteUser,
   getAllBookings, 
   deleteAllBookings, 
   deleteBookingsByYear,
@@ -28,6 +29,7 @@ router.get('/reports/schedule-detail', exportScheduleDetail);
 // ----- User Management Routes -----
 router.get('/users', getUsers);
 router.patch('/users/:id', updateUser);
+router.delete('/users/:id', deleteUser);
 
 // ----- Schedule Management Routes -----
 router.get('/schedule', getSchedule);
