@@ -1,0 +1,20 @@
+{
+  "name": "QSR Booking App",
+  "short_name": "QSR Booking",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "/palm-tree.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/palm-tree.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}
