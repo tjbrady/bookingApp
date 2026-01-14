@@ -17,65 +17,167 @@ const getUsers = async (req, res) => {
 };
 
 // @route   PATCH /api/admin/users/:id
+
 // @desc    Update a user's status and/or role
+
 // @access  Admin
+
 const updateUser = async (req, res) => {
+
   const { status, role } = req.body;
 
+
+
+  // Prevent admin from modifying their own account status/role to avoid lockout
+
+  if (req.params.id === req.user.id) {
+
+    return res.status(403).json({ msg: 'Action Forbidden: You cannot modify your own account privileges.' });
+
+  }
+
+
+
   try {
+
     const user = await User.findById(req.params.id);
+
     if (!user) {
+
       return res.status(404).json({ msg: 'User not found' });
+
     }
+
+
+
+    // Protect the Super Admin account
+
+    if (user.email === 'bradytj@gmail.com') {
+
+        return res.status(403).json({ msg: 'Action Forbidden: This Super Admin account cannot be modified.' });
+
+    }
+
+
 
     // Update status if provided and valid
+
     if (status) {
+
       if (!['pending', 'active', 'rejected'].includes(status)) {
+
         return res.status(400).json({ msg: 'Invalid status provided.' });
+
       }
+
       user.status = status;
+
     }
+
+
 
     // Update role if provided and valid
+
     if (role) {
+
       if (!['user', 'admin'].includes(role)) {
+
         return res.status(400).json({ msg: 'Invalid role provided.' });
+
       }
+
       user.role = role;
+
     }
+
+
 
     await user.save();
+
     const updatedUser = await User.findById(req.params.id).select('-password');
+
     res.json(updatedUser);
+
   } catch (err) {
+
     console.error('Error in updateUser:', err.message);
+
     res.status(500).json({ msg: err.message || 'Server Error updating user' });
+
   }
+
 };
 
-// @route   DELETE /api/admin/users/:id
-// @desc    Delete a user and their associated bookings
-// @access  Admin
-const deleteUser = async (req, res) => {
-  try {
-    const userId = req.params.id;
-    const user = await User.findById(userId);
 
-    if (!user) {
-      return res.status(404).json({ msg: 'User not found' });
+
+// @route   DELETE /api/admin/users/:id
+
+// @desc    Delete a user and their associated bookings
+
+// @access  Admin
+
+const deleteUser = async (req, res) => {
+
+  try {
+
+    const userId = req.params.id;
+
+    
+
+    // Prevent admin from deleting their own account
+
+    if (userId === req.user.id) {
+
+        return res.status(403).json({ msg: 'Action Forbidden: You cannot delete your own account.' });
+
     }
 
+
+
+    const user = await User.findById(userId);
+
+
+
+    if (!user) {
+
+      return res.status(404).json({ msg: 'User not found' });
+
+    }
+
+
+
+    // Protect the Super Admin account
+
+    if (user.email === 'bradytj@gmail.com') {
+
+        return res.status(403).json({ msg: 'Action Forbidden: This Super Admin account cannot be deleted.' });
+
+    }
+
+
+
     // Delete associated bookings first
+
     await Booking.deleteMany({ user: userId });
 
+
+
     // Delete the user
+
     await User.findByIdAndDelete(userId);
 
+
+
     res.json({ msg: 'User and associated bookings deleted' });
+
   } catch (err) {
+
     console.error('Error in deleteUser:', err.message);
+
     res.status(500).json({ msg: 'Server Error deleting user' });
+
   }
+
 };
 
 

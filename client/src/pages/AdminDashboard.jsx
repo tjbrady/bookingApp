@@ -52,7 +52,7 @@ const AdminDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState('');
-  const { isAuthenticated, loading } = useContext(AuthContext);
+  const { isAuthenticated, loading, user } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const fetchData = async () => {
@@ -185,6 +185,16 @@ const AdminDashboard = () => {
   };
 
   const renderUserActions = (u) => {
+    // 1. Prevent actions on the currently logged-in admin
+    if (user && u._id === user.id) {
+        return <span style={{ color: '#666', fontStyle: 'italic' }} title="You cannot modify your own account">Current User</span>;
+    }
+
+    // 2. Protect the specific Super Admin email
+    if (u.email === 'bradytj@gmail.com') {
+        return <span style={{ color: 'purple', fontWeight: 'bold' }} title="Protected Super Admin Account">Super Admin</span>;
+    }
+
     let actionButtons = null;
     switch (u.status) {
       case 'pending':
