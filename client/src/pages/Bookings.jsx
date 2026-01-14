@@ -206,6 +206,7 @@ const Bookings = () => {
               className={className}
               onClick={() => handleDayClick(date, booking)}
               style={{ backgroundColor: colour ? colourMap[colour] : null }}
+              title={booking ? `Status: ${booking.status}\nUser: ${booking.username}` : ''}
             >
                 {selection.start && date.getTime() === selection.start.getTime() ? (
                   <div className="selection-text">From Night of {day}</div>
@@ -215,7 +216,7 @@ const Bookings = () => {
                   <div className="day-number">{day}</div>
                 )}
                 {booking && (
-                    <div className="booking-status-icon" title={`Status: ${booking.status}\nUser: ${booking.username}`}>
+                    <div className="booking-status-icon">
                         {booking.status === 'confirmed' ? '✓' : booking.status === 'pending' ? '?' : ''}
                     </div>
                 )}
