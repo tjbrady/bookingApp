@@ -1,3 +1,6 @@
 .env
 node_modules
 Working Copy of .env
+*.log
+renew_token.js
+test_simple_email.js
