@@ -1,0 +1,19 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background with rounded corners for iOS icon style -->
+  <rect width="512" height="512" rx="110" fill="#e0f7fa"/>
+  
+  <!-- Trunk -->
+  <path d="M236 450 C236 450 220 300 246 220 L266 220 C292 300 276 450 276 450 Z" fill="#795548"/>
+  
+  <!-- Leaves (Fronds) -->
+  <!-- Bottom Left -->
+  <path d="M256 220 Q100 220 60 320 Q100 200 256 220 Z" fill="#43A047"/>
+  <!-- Top Left -->
+  <path d="M256 220 Q120 100 80 60 Q200 120 256 220 Z" fill="#4CAF50"/>
+  <!-- Top Center -->
+  <path d="M256 220 Q256 20 256 20 Q300 120 256 220 Z" fill="#388E3C"/>
+  <!-- Top Right -->
+  <path d="M256 220 Q392 100 432 60 Q312 120 256 220 Z" fill="#4CAF50"/>
+  <!-- Bottom Right -->
+  <path d="M256 220 Q412 220 452 320 Q412 200 256 220 Z" fill="#43A047"/>
+</svg>
