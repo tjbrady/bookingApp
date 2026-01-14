@@ -95,7 +95,10 @@ const Bookings = () => {
   }, [publicBookings]);
 
   const handleDayClick = (date, booking) => {
-    if (booking && ['confirmed', 'pending', 'cancellation_pending'].includes(booking.status)) return;
+    if (booking && ['confirmed', 'pending', 'cancellation_pending'].includes(booking.status)) {
+        alert(`Booking Details:\nUser: ${booking.username}\nStatus: ${booking.status}`);
+        return;
+    }
 
     if (!selection.start || (selection.start && selection.end)) {
       setSelection({ start: date, end: null });
