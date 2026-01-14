@@ -3,6 +3,7 @@ import { jsPDF } from 'jspdf';
 import html2canvas from 'html2canvas';
 import api from '../services/api';
 import { AuthContext } from './AuthContext';
+import { formatDate } from '../utils/dateUtils';
 
 export const ReportContext = createContext();
 
@@ -73,7 +74,7 @@ export const ReportProvider = ({ children }) => {
               api.get('/bookings'),
           ]);
           
-          const reportTitle = `Booking Report - ${new Date().toLocaleDateString()}`;
+          const reportTitle = `Booking Report - ${formatDate(new Date())}`;
           const reportFileName = `booking_report_${new Date().toISOString().substring(0, 10)}.pdf`;
           let html = `<h1>${reportTitle}</h1>`;
           html += `<h2>My Bookings (${user?.username || 'Guest'})</h2>`;
@@ -82,7 +83,7 @@ export const ReportProvider = ({ children }) => {
           } else {
               html += `<table><thead><tr><th>From</th><th>To</th><th>Service</th><th>Status</th></tr></thead><tbody>`;
               myBookingsRes.data.forEach(b => {
-                  html += `<tr><td>${new Date(b.dateFrom).toLocaleDateString()}</td><td>${new Date(b.dateTo).toLocaleDateString()}</td><td>${b.service}</td><td>${b.status}</td></tr>`;
+                  html += `<tr><td>${formatDate(b.dateFrom)}</td><td>${formatDate(b.dateTo)}</td><td>${b.service}</td><td>${b.status}</td></tr>`;
               });
               html += '</tbody></table>';
           }
@@ -93,7 +94,7 @@ export const ReportProvider = ({ children }) => {
           } else {
               html += `<table><thead><tr><th>User</th><th>From</th><th>To</th><th>Service</th><th>Status</th></tr></thead><tbody>`;
               publicBookingsRes.data.forEach(b => {
-                  html += `<tr><td>${b.user?.username || 'N/A'}</td><td>${new Date(b.dateFrom).toLocaleDateString()}</td><td>${new Date(b.dateTo).toLocaleDateString()}</td><td>${b.service}</td><td>${b.status}</td></tr>`;
+                  html += `<tr><td>${b.user?.username || 'N/A'}</td><td>${formatDate(b.dateFrom)}</td><td>${formatDate(b.dateTo)}</td><td>${b.service}</td><td>${b.status}</td></tr>`;
               });
               html += '</tbody></table>';
           }

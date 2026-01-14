@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useMemo } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
+import { formatDate } from '../utils/dateUtils';
 // Removed html2canvas and jsPDF imports
 import './Calendar.css';
 
@@ -11,15 +12,6 @@ const colourMap = { // Changed to colourMap
   Orange: '#ffa500',
   Yellow: '#ffff00',
   Green: '#90ee90',
-};
-
-// Helper function to format dates as '23Nov25'
-const formatDate = (dateString) => {
-  const date = new Date(dateString);
-  const day = date.getUTCDate();
-  const month = date.toLocaleString('en-GB', { month: 'short', timeZone: 'UTC' });
-  const year = date.getUTCFullYear().toString().slice(-2);
-  return `${day}${month}${year}`;
 };
 
 const bookableColours = ['Blue', 'Orange', 'Yellow']; // Changed to bookableColours
@@ -309,7 +301,7 @@ const Bookings = () => {
           {/* Selection and Request buttons remain at the bottom */}
           {selection.start && selection.end && (
             <div className="header-action-area" style={{textAlign: 'center', margin: '1rem 0'}}>
-              <button onClick={handleRequestBooking}>Request Booking: {selection.start.toLocaleDateString()} - {selection.end.toLocaleDateString()}</button>
+              <button onClick={handleRequestBooking}>Request Booking: {formatDate(selection.start)} - {formatDate(selection.end)}</button>
               <button onClick={() => setSelection({start: null, end: null})} style={{marginLeft: '10px'}}>Clear Selection</button>
             </div>
           )}

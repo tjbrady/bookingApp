@@ -2,6 +2,7 @@ import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext.jsx';
+import { formatDate } from '../utils/dateUtils';
 
 const MessageOfTheDayManager = () => {
     const [message, setMessage] = useState('');
@@ -280,7 +281,7 @@ const AdminDashboard = () => {
               {pendingBookingRequests.map(b => (
                 <tr key={b._id} style={{ borderBottom: '1px solid #ddd' }}>
                   <td style={{ padding: '8px' }}>{b.user?.username || 'N/A'}</td>
-                  <td style={{ padding: '8px' }}>{new Date(b.dateFrom).toLocaleDateString()} - {new Date(b.dateTo).toLocaleDateString()}</td>
+                  <td style={{ padding: '8px' }}>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
                   <td style={{ padding: '8px' }}>
                       <button onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')} style={{ marginRight: '5px' }}>Approve</button>
                       <button onClick={() => handleUpdateBookingStatus(b._id, 'cancelled')}>Reject</button>
@@ -309,7 +310,7 @@ const AdminDashboard = () => {
               {pendingCancellationRequests.map(b => (
                 <tr key={b._id} style={{ borderBottom: '1px solid #ddd' }}>
                   <td style={{ padding: '8px' }}>{b.user?.username || 'N/A'}</td>
-                  <td style={{ padding: '8px' }}>{new Date(b.dateFrom).toLocaleDateString()} - {new Date(b.dateTo).toLocaleDateString()}</td>
+                  <td style={{ padding: '8px' }}>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
                   <td style={{ padding: '8px' }}>
                       <button onClick={() => handleUpdateBookingStatus(b._id, 'cancelled')} style={{ marginRight: '5px' }}>Approve Cancellation</button>
                       <button onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')}>Deny Cancellation</button>
@@ -339,7 +340,7 @@ const AdminDashboard = () => {
             {bookings.map(b => (
                 <tr key={b._id} style={{ opacity: b.status === 'cancelled' ? 0.5 : 1 }}>
                 <td style={{ padding: '8px' }}>{b.user?.username || 'N/A'}</td>
-                <td style={{ padding: '8px' }}>{new Date(b.dateFrom).toLocaleDateString()} - {new Date(b.dateTo).toLocaleDateString()}</td>
+                <td style={{ padding: '8px' }}>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
                 <td style={{ padding: '8px' }}>{b.status}</td>
                 <td style={{ padding: '8px' }}>
                     <button onClick={() => handleDeleteBooking(b._id)} style={{color: 'red'}}>Delete</button>

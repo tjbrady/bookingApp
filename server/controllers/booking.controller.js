@@ -4,6 +4,7 @@ const ColorSchedule = require('../models/colorSchedule.model');
 const User = require('../models/user.model');
 const Notification = require('../models/notification.model');
 const sendEmail = require('../services/email.service');
+const { formatDate } = require('../utils/dateUtils');
 
 // @desc    Get bookings for the logged-in user
 const getMyBookings = async (req, res) => {
@@ -85,9 +86,9 @@ const createBooking = async (req, res) => {
       console.log('EMAIL_USER from .env:', process.env.EMAIL_USER); // Debugging .env variable access
       const subject = 'New Booking Request';
       const dashboardLink = 'http://bookingapp-static.onrender.com';
-      const text = `User ${requestingUser.username} has requested a booking from ${new Date(dateFrom).toDateString()} to ${new Date(dateTo).toDateString()}. Please log in to the admin dashboard to approve or reject: ${dashboardLink}`;
+      const text = `User ${requestingUser.username} has requested a booking from ${formatDate(dateFrom)} to ${formatDate(dateTo)}. Please log in to the admin dashboard to approve or reject: ${dashboardLink}`;
       const html = `<p>User <strong>${requestingUser.username}</strong> has requested a booking.</p>
-                    <p><strong>Dates:</strong> ${new Date(dateFrom).toDateString()} - ${new Date(dateTo).toDateString()}</p>
+                    <p><strong>Dates:</strong> ${formatDate(dateFrom)} - ${formatDate(dateTo)}</p>
                     <p>Please <a href="${dashboardLink}">log in to the admin dashboard</a> to manage this request.</p>`;
       
       // Send to all admins (sequentially with delay to avoid rate limits)
@@ -122,8 +123,8 @@ const updateBooking = async (req, res) => {
         booking.status = status;
 
         if (originalStatus !== status && ['pending', 'cancellation_pending'].includes(originalStatus)) {
-            const dateFrom = new Date(booking.dateFrom).toLocaleDateString();
-            const dateTo = new Date(booking.dateTo).toLocaleDateString();
+            const dateFrom = formatDate(booking.dateFrom);
+            const dateTo = formatDate(booking.dateTo);
             await Notification.create({
                 user: booking.user._id, // Use _id here
                 message: `Your booking request for ${dateFrom} - ${dateTo} has been ${status}.`
@@ -136,8 +137,8 @@ const updateBooking = async (req, res) => {
                 booking.status = 'cancelled'; // User can directly cancel pending
             } else if (originalStatus === 'confirmed') {
                 booking.status = 'cancellation_pending'; // User can request cancellation for confirmed
-                const dateFrom = new Date(booking.dateFrom).toLocaleDateString();
-                const dateTo = new Date(booking.dateTo).toLocaleDateString();
+                const dateFrom = formatDate(booking.dateFrom);
+                const dateTo = formatDate(booking.dateTo);
                 // Notify admin of cancellation request (optional, can be added later)
                 // For now, notify user about their request status
                 await Notification.create({
