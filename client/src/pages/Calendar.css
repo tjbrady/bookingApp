@@ -181,3 +181,51 @@
 .day-cell.selection-end .day-number {
     display: none;
 }
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+  /* Reduce padding and sticky offset */
+  .bookings-sticky-header {
+    padding: 0.5rem;
+    top: 50px; /* Approx navbar height, adjust as needed */
+    margin-top: -1rem; /* Less negative margin needed on mobile often */
+  }
+
+  /* Compact Title */
+  .header-title-column h2 {
+    font-size: 1rem;
+    margin-bottom: 0;
+    text-align: center;
+  }
+  
+  /* Hide Instructions and My Bookings List to save space */
+  .header-instructions-column,
+  .header-bookings-list-column {
+    display: none !important;
+  }
+
+  /* Ensure the Flex container doesn't try to wrap unnecessarily with hidden items */
+  .bookings-sticky-header > div {
+    display: block !important; /* Reset flex layout to simple block since we only have 1 visible item + action area */
+  }
+
+  .header-title-column {
+    min-width: 0 !important; /* Allow shrinking */
+    flex: none !important;
+    width: 100%;
+  }
+
+  /* Make the Action Area (Request Booking buttons) prominent but compact */
+  .header-action-area {
+    margin: 0.5rem 0 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .header-action-area button {
+    width: 100%;
+    margin-left: 0 !important; /* Remove desktop spacing */
+    padding: 8px;
+  }
+}

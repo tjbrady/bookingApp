@@ -256,12 +256,12 @@ const Bookings = () => {
           <div style={{ display: 'flex', gap: '2rem', alignItems: 'baseline', flexWrap: 'wrap' }}>
 
             {/* Column 1: Main Heading */}
-            <div style={{ flex: '1 1 200px', minWidth: '200px' }}>
+            <div className="header-title-column" style={{ flex: '1 1 200px', minWidth: '200px' }}>
               <h2 style={{ margin: 0, padding: 0, lineHeight: 1.2 }}>Booking Calendar & My Requests</h2>
             </div>
 
             {/* Column 2: My Bookings List */}
-            <div style={{ flex: '2 1 400px', minWidth: '300px' }}>
+            <div className="header-bookings-list-column" style={{ flex: '2 1 400px', minWidth: '300px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0' }}>
                 <h3 style={{ margin: 0, padding: 0, lineHeight: 1.2 }}>My Booking Requests</h3>
                 {hasCancelledBookings && (
@@ -295,7 +295,7 @@ const Bookings = () => {
             </div>
 
             {/* Column 3: Instructions */}
-            <div style={{ flex: '1 1 450px' }} className="instructions-box">
+            <div className="header-instructions-column instructions-box" style={{ flex: '1 1 450px' }}>
               <h3 style={{ margin: '0', padding: 0, lineHeight: 1.2 }}>How to Request a Booking:</h3>
               <ul style={{ listStyleType: 'none', padding: '0', margin: '0' }}>
                 <li style={{ marginBottom: '0.5rem' }}>• Click your first Night to start a booking.</li>
@@ -308,7 +308,7 @@ const Bookings = () => {
           
           {/* Selection and Request buttons remain at the bottom */}
           {selection.start && selection.end && (
-            <div style={{textAlign: 'center', margin: '1rem 0'}}>
+            <div className="header-action-area" style={{textAlign: 'center', margin: '1rem 0'}}>
               <button onClick={handleRequestBooking}>Request Booking: {selection.start.toLocaleDateString()} - {selection.end.toLocaleDateString()}</button>
               <button onClick={() => setSelection({start: null, end: null})} style={{marginLeft: '10px'}}>Clear Selection</button>
             </div>
