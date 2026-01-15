@@ -11,6 +11,11 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// Health Check Endpoint (placed before other routes)
+app.get('/api/health', (req, res) => {
+  res.status(200).json({ status: 'active', message: 'Server is awake' });
+});
+
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log('MongoDB connected...'))
