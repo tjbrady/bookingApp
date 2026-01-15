@@ -2,11 +2,10 @@ import React, { useState, useEffect, useContext, useMemo } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { useNavigate } from 'react-router-dom';
-import { formatDate } from '../utils/dateUtils';
-// Removed html2canvas and jsPDF imports
+import { formatDate, toUTCKey, createUTCDate, getStartOfWeekUTC, addDaysUTC } from '../utils/dateUtils';
 import './Calendar.css';
 
-const colourMap = { // Changed to colourMap
+const colourMap = {
   Red: '#ffcccb',
   Blue: '#add8e6',
   Orange: '#ffa500',
@@ -14,15 +13,7 @@ const colourMap = { // Changed to colourMap
   Green: '#90ee90',
 };
 
-const bookableColours = ['Blue', 'Orange', 'Yellow']; // Changed to bookableColours
-
-const getStartOfWeek = (date) => {
-    const d = new Date(date);
-    d.setHours(0, 0, 0, 0);
-    const day = d.getDay();
-    const diff = d.getDate() - day;
-    return new Date(d.setDate(diff));
-};
+const bookableColours = ['Blue', 'Orange', 'Yellow'];
 
 const Bookings = () => {
   const [myBookings, setMyBookings] = useState([]);
@@ -68,11 +59,29 @@ const Bookings = () => {
   const scheduleMap = useMemo(() => {
     const map = new Map();
     colourSchedule.forEach(entry => {
-        let current = getStartOfWeek(new Date(entry.startDate));
+        // Use UTC date logic
+        let current = getStartOfWeekUTC(new Date(entry.startDate));
         const endDate = new Date(entry.endDate);
+        // endDate is from DB (UTC string), new Date() parses it.
+        // If entry.endDate is '2026-10-10T00:00:00.000Z', new Date is local.
+        // We should ensure endDate is treated as UTC timestamp or object
+        // Actually, toUTCKey works on date objects regardless of how they were created 
+        // IF we are consistent.
+        // But getStartOfWeekUTC expects a date object and treats its UTC components as the truth.
+        // So we must ensure 'current' and 'endDate' are comparable.
+        // Let's rely on toUTCKey for the key, and UTC timestamp comparison for the loop.
+        
+        // Re-parsing to ensure we strictly use the UTC values
+        // If entry.startDate is "2026-01-01T00:00:00Z"
+        // new Date() might be shifted. 
+        // Safer: createUTCDate from the string components? 
+        // Actually, standard ISO strings are parsed as UTC by new Date(string).
+        // The issue is methods like getDay() vs getUTCDay().
+        // getStartOfWeekUTC uses getUTCDay(), so it works on the UTC time.
+        
         while (current <= endDate) {
-            map.set(current.toISOString().substring(0, 10), entry.color);
-            current.setDate(current.getDate() + 7);
+            map.set(toUTCKey(current), entry.color);
+            current = addDaysUTC(current, 7);
         }
     });
     return map;
@@ -84,17 +93,19 @@ const Bookings = () => {
         let current = new Date(booking.dateFrom);
         const endDate = new Date(booking.dateTo);
         while (current <= endDate) {
-            map.set(current.toISOString().substring(0, 10), {
+            map.set(toUTCKey(current), {
                 username: booking.user?.username || 'Unknown',
                 status: booking.status,
             });
-            current.setDate(current.getDate() + 1);
+            current = addDaysUTC(current, 1);
         }
     });
     return map;
   }, [publicBookings]);
 
   const handleDayClick = (date, booking) => {
+    // date here is passed from renderMonth, so it is a UTC midnight date object.
+    
     if (booking && ['confirmed', 'pending', 'cancellation_pending'].includes(booking.status)) {
         alert(`Booking Details:\nUser: ${booking.username}\nStatus: ${booking.status}`);
         return;
@@ -114,10 +125,10 @@ const Bookings = () => {
   const handleRequestBooking = async () => {
     if (!selection.start || !selection.end) return;
 
-    let current = new Date(selection.start);
+    let current = new Date(selection.start); // Clone the UTC date
     while (current <= selection.end) {
-        const dateKey = current.toISOString().substring(0, 10);
-        const weekStartKey = getStartOfWeek(current).toISOString().substring(0, 10);
+        const dateKey = toUTCKey(current);
+        const weekStartKey = toUTCKey(getStartOfWeekUTC(current));
         
         const bookingStatus = bookingMap.get(dateKey)?.status;
         if (bookingStatus && ['confirmed', 'pending', 'cancellation_pending'].includes(bookingStatus)) {
@@ -130,11 +141,16 @@ const Bookings = () => {
             alert('Error: Your selection includes dates that are not in a bookable colour period (Blue, Orange, or Yellow).');
             return;
         }
-        current.setDate(current.getDate() + 1);
+        current = addDaysUTC(current, 1);
     }
 
     try {
-      const res = await api.post('/bookings', { service: 'Date Range Booking', dateFrom: selection.start, dateTo: selection.end });
+      // Send UTC ISO strings (which backend should respect as dates)
+      const res = await api.post('/bookings', { 
+          service: 'Date Range Booking', 
+          dateFrom: selection.start.toISOString(), // Send strict ISO string
+          dateTo: selection.end.toISOString() 
+      });
       await fetchAllData();
       setSelection({ start: null, end: null });
     } catch (err) {
@@ -172,19 +188,22 @@ const Bookings = () => {
   };
 
   const renderMonth = (year, monthIndex) => {
-    const firstDay = new Date(year, monthIndex, 1);
-    const monthName = firstDay.toLocaleString('default', { month: 'long' });
-    const daysInMonth = new Date(year, monthIndex + 1, 0).getDate();
-    const startingDay = firstDay.getDay();
+    // IMPORTANT: Create dates as UTC to match DB and avoid timezone shifts
+    const firstDay = createUTCDate(year, monthIndex, 1);
+    const monthName = firstDay.toLocaleString('default', { month: 'long', timeZone: 'UTC' }); 
+    // Calculate days in month using UTC logic
+    // Day 0 of next month gives last day of current month
+    const daysInMonth = createUTCDate(year, monthIndex + 1, 0).getUTCDate(); 
+    const startingDay = firstDay.getUTCDay(); // 0-6
 
     const days = [];
     for (let i = 0; i < startingDay; i++) { days.push(<div key={`empty-${i}`} className="day-cell not-current-month"></div>); }
 
     for (let day = 1; day <= daysInMonth; day++) {
-        const date = new Date(year, monthIndex, day);
-        date.setHours(0,0,0,0);
-        const dateKey = date.toISOString().substring(0, 10);
-        const weekStartKey = getStartOfWeek(date).toISOString().substring(0, 10);
+        const date = createUTCDate(year, monthIndex, day);
+        const dateKey = toUTCKey(date);
+        const weekStartKey = toUTCKey(getStartOfWeekUTC(date));
+        
         const colour = scheduleMap.get(weekStartKey) || '';
         const booking = bookingMap.get(dateKey);
 
@@ -195,7 +214,8 @@ const Bookings = () => {
             className += ' bookable';
         }
         
-        if (selection.start && selection.end && date >= selection.start && date <= selection.end) {
+        // Use getTime() for comparisons as it returns absolute ms timestamp
+        if (selection.start && selection.end && date.getTime() >= selection.start.getTime() && date.getTime() <= selection.end.getTime()) {
             if(date.getTime() === selection.start.getTime()) className += ' selection-start';
             else if(date.getTime() === selection.end.getTime()) className += ' selection-end';
             else className += ' selection-mid';
