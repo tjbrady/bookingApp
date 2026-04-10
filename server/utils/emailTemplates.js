@@ -1,6 +1,6 @@
 const getBaseTemplate = (title, content, actionLink = null, actionText = null) => {
   const logoUrl = 'https://bookingapp-static.onrender.com/palm-tree.png';
-  const primaryColor = '#2c3e50';
+  const primaryColor = '#8e8e8e';
   const secondaryColor = '#3498db';
   const backgroundColor = '#f4f7f6';
 
