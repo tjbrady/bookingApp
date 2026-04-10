@@ -375,6 +375,35 @@ const getEmailStatus = async (req, res) => {
   }
 };
 
+const sendTestEmail = async (req, res) => {
+  const { recipientEmail } = req.body;
+  const sendEmail = require('../services/email.service');
+  
+  if (!recipientEmail) {
+    return res.status(400).json({ msg: 'Recipient email is required' });
+  }
+
+  try {
+    const user = await User.findById(req.user.id);
+    const adminName = user ? user.username : 'Admin';
+
+    const subject = 'Test Email from Booking App';
+    const text = `Hello, this is a test email sent by ${adminName} to confirm the Gmail API configuration is working correctly!`;
+    const html = `<p>Hello,</p><p>This is a test email sent by <strong>${adminName}</strong> to confirm the <strong>Gmail API configuration</strong> is working correctly!</p>`;
+
+    const result = await sendEmail(recipientEmail, subject, text, html);
+    
+    if (result && result.id) {
+      res.json({ msg: `Test email sent successfully to ${recipientEmail}!`, id: result.id });
+    } else {
+      res.status(500).json({ msg: 'Failed to send test email. Check server logs.' });
+    }
+  } catch (err) {
+    console.error('Error sending test email:', err.message);
+    res.status(500).json({ msg: 'Error sending test email: ' + err.message });
+  }
+};
+
 module.exports = {
   getUsers,
   updateUser,
@@ -387,4 +416,5 @@ module.exports = {
   exportScheduleDetail,
   exportScheduleSummary,
   getEmailStatus,
+  sendTestEmail,
 };

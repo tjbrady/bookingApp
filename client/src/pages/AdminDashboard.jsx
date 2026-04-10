@@ -48,8 +48,12 @@ const MessageOfTheDayManager = () => {
 };
 
 const EmailStatusChecker = () => {
+    const { user } = useContext(AuthContext);
     const [status, setStatus] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [testLoading, setTestLoading] = useState(false);
+    const [testResult, setTestResult] = useState(null);
+    const [testEmail, setTestEmail] = useState('');
 
     useEffect(() => {
         const fetchEmailStatus = async () => {
@@ -63,7 +67,31 @@ const EmailStatusChecker = () => {
             }
         };
         fetchEmailStatus();
-    }, []);
+        
+        // Pre-fill test email with current user's email if available
+        if (user && user.email) {
+            setTestEmail(user.email);
+        }
+    }, [user]);
+
+    const handleSendTestEmail = async () => {
+        if (!testEmail) {
+            setTestResult({ success: false, message: 'Please enter a recipient email.' });
+            return;
+        }
+
+        setTestLoading(true);
+        setTestResult(null);
+        try {
+            const res = await api.post('/admin/test-email', { recipientEmail: testEmail });
+            setTestResult({ success: true, message: res.data.msg });
+        } catch (e) {
+            console.error("Test email failed", e);
+            setTestResult({ success: false, message: e.response?.data?.msg || 'Test email failed.' });
+        } finally {
+            setTestLoading(false);
+        }
+    };
 
     if (loading) return <p>Checking email status...</p>;
     if (!status) return null;
@@ -78,9 +106,64 @@ const EmailStatusChecker = () => {
         }}>
             <h3 style={{ marginTop: 0 }}>Email System Status</h3>
             {status.configured ? (
-                <p style={{ color: 'green', fontWeight: 'bold' }}>
-                    ✅ Email system is configured and ready.
-                </p>
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
+                    <div>
+                        <p style={{ color: 'green', fontWeight: 'bold', margin: '0 0 10px 0' }}>
+                            ✅ Email system is configured and ready.
+                        </p>
+                        <div style={{ fontSize: '0.85rem', color: '#666' }}>
+                            <strong>Current Config (Masked):</strong>
+                            <ul style={{ margin: '5px 0' }}>
+                                {Object.entries(status.details).map(([key, value]) => (
+                                    <li key={key}>{key}: <code>{value}</code></li>
+                                ))}
+                            </ul>
+                        </div>
+                    </div>
+                    <div style={{ textAlign: 'right', minWidth: '250px' }}>
+                        <div style={{ marginBottom: '10px' }}>
+                            <label style={{ fontSize: '0.85rem', display: 'block', marginBottom: '4px' }}>Recipient Email:</label>
+                            <input 
+                                type="email" 
+                                value={testEmail} 
+                                onChange={(e) => setTestEmail(e.target.value)}
+                                placeholder="test@example.com"
+                                style={{ 
+                                    padding: '6px', 
+                                    width: '200px', 
+                                    borderRadius: '4px', 
+                                    border: '1px solid #ccc' 
+                                }}
+                            />
+                        </div>
+                        <button 
+                            onClick={handleSendTestEmail} 
+                            disabled={testLoading}
+                            style={{ 
+                                padding: '8px 16px', 
+                                backgroundColor: '#4CAF50', 
+                                color: 'white', 
+                                border: 'none', 
+                                borderRadius: '4px', 
+                                cursor: testLoading ? 'not-allowed' : 'pointer' 
+                            }}
+                        >
+                            {testLoading ? 'Sending...' : 'Send Test Email'}
+                        </button>
+                        {testResult && (
+                            <p style={{ 
+                                margin: '10px 0 0 0', 
+                                color: testResult.success ? 'green' : 'red',
+                                fontSize: '0.85rem',
+                                fontWeight: 'bold',
+                                maxWidth: '250px',
+                                wordBreak: 'break-word'
+                            }}>
+                                {testResult.message}
+                            </p>
+                        )}
+                    </div>
+                </div>
             ) : (
                 <div style={{ color: 'red' }}>
                     <p style={{ fontWeight: 'bold' }}>❌ Email system is NOT fully configured.</p>
@@ -88,14 +171,6 @@ const EmailStatusChecker = () => {
                     <p><em>Check your Render environment variables or .env file.</em></p>
                 </div>
             )}
-            <div style={{ fontSize: '0.85rem', color: '#666' }}>
-                <strong>Current Config (Masked):</strong>
-                <ul style={{ margin: '5px 0' }}>
-                    {Object.entries(status.details).map(([key, value]) => (
-                        <li key={key}>{key}: <code>{value}</code></li>
-                    ))}
-                </ul>
-            </div>
         </section>
     );
 };
