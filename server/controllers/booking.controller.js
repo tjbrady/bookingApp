@@ -5,6 +5,7 @@ const User = require('../models/user.model');
 const Notification = require('../models/notification.model');
 const sendEmail = require('../services/email.service');
 const { formatDate } = require('../utils/dateUtils');
+const { getBaseTemplate } = require('../utils/emailTemplates');
 
 // @desc    Get bookings for the logged-in user
 const getMyBookings = async (req, res) => {
@@ -87,10 +88,14 @@ const createBooking = async (req, res) => {
       const subject = 'New Booking Request';
       const dashboardLink = 'http://bookingapp-static.onrender.com';
       const text = `User ${requestingUser.username} has requested a booking from ${formatDate(dateFrom)} to ${formatDate(dateTo)}. Please log in to the admin dashboard to approve or reject: ${dashboardLink}`;
-      const html = `<p>User <strong>${requestingUser.username}</strong> has requested a booking.</p>
-                    <p><strong>Dates:</strong> ${formatDate(dateFrom)} - ${formatDate(dateTo)}</p>
-                    <p>Please <a href="${dashboardLink}">log in to the admin dashboard</a> to manage this request.</p>`;
-      
+      const html = getBaseTemplate(
+        'New Booking Request',
+        `<p>User <strong>${requestingUser.username}</strong> has requested a booking.</p>
+         <p><strong>Dates:</strong> ${formatDate(dateFrom)} - ${formatDate(dateTo)}</p>
+         <p>Please log in to the admin dashboard to manage this request.</p>`,
+        dashboardLink,
+        'Go to Admin Dashboard'
+      );      
       // Send to all admins (sequentially with delay to avoid rate limits)
       for (const email of adminEmails) {
         await sendEmail(email, subject, text, html);
@@ -138,11 +143,13 @@ const updateBooking = async (req, res) => {
             if (user && user.email) {
                 const subject = `Booking Update: Your request has been ${status === 'confirmed' ? 'Approved' : 'Rejected/Cancelled'}`;
                 const text = `Hello ${user.username}, your booking request for ${dateFrom} to ${dateTo} has been ${status === 'confirmed' ? 'approved' : 'rejected or cancelled'}.`;
-                const html = `
-                    <p>Hello <strong>${user.username}</strong>,</p>
-                    <p>Your booking request for the period <strong>${dateFrom}</strong> to <strong>${dateTo}</strong> has been <strong>${status === 'confirmed' ? 'approved' : 'rejected or cancelled'}</strong>.</p>
-                    <p>You can view your bookings in the <a href="http://bookingapp-static.onrender.com/bookings">My Bookings</a> section of the app.</p>
-                `;
+                const html = getBaseTemplate(
+                    `Booking ${status === 'confirmed' ? 'Approved' : 'Rejected'}`,
+                    `<p>Hello <strong>${user.username}</strong>,</p>
+                     <p>Your booking request for the period <strong>${dateFrom}</strong> to <strong>${dateTo}</strong> has been <strong>${status === 'confirmed' ? 'approved' : 'rejected or cancelled'}</strong>.</p>`,
+                    'https://bookingapp-static.onrender.com/bookings',
+                    'View My Bookings'
+                );
                 try {
                     await sendEmail(user.email, subject, text, html);
                 } catch (err) {

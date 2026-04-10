@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../services/email.service');
 
+const { getBaseTemplate } = require('../utils/emailTemplates');
+
 const register = async (req, res) => {
   const { username, email, password } = req.body;
 
@@ -23,7 +25,7 @@ const register = async (req, res) => {
 
     await user.save();
 
-    // Notify Admins via Email
+    // Notify admins
     const admins = await User.find({ role: 'admin' });
     const adminEmails = admins.map(admin => admin.email);
 
@@ -32,11 +34,16 @@ const register = async (req, res) => {
       const subject = 'New User Registration Pending Approval';
       const dashboardLink = 'http://bookingapp-static.onrender.com';
       const text = `A new user has registered.\n\nUsername: ${username}\nEmail: ${email}\n\nPlease log in to the admin dashboard to approve or reject this user: ${dashboardLink}`;
-      const html = `<p>A new user has registered and is awaiting approval.</p>
-                    <p><strong>Username:</strong> ${username}</p>
-                    <p><strong>Email:</strong> ${email}</p>
-                    <p>Please <a href="${dashboardLink}">log in to the admin dashboard</a> to manage this request.</p>`;
-      
+      const html = getBaseTemplate(
+        'New User Registration',
+        `<p>A new user has registered and is awaiting approval.</p>
+         <p><strong>Username:</strong> ${username}</p>
+         <p><strong>Email:</strong> ${email}</p>
+         <p>Please log in to the admin dashboard to manage this request.</p>`,
+        dashboardLink,
+        'Go to Admin Dashboard'
+      );
+
       // Send emails sequentially with delay to avoid rate limits
       for (const email of adminEmails) {
         await sendEmail(email, subject, text, html);
