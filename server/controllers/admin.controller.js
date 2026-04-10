@@ -400,7 +400,9 @@ const sendTestEmail = async (req, res) => {
     }
   } catch (err) {
     console.error('Error sending test email:', err.message);
-    res.status(500).json({ msg: 'Error sending test email: ' + err.message });
+    // Provide a more descriptive error back to the frontend
+    const errorMsg = err.response?.data?.error_description || err.message || 'Error sending test email';
+    res.status(500).json({ msg: 'Email error: ' + errorMsg });
   }
 };
 

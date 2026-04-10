@@ -57,7 +57,7 @@ const sendEmail = async (to, subject, text, html) => {
     return res.data;
   } catch (error) {
     console.error('Error sending email:', error);
-    // We don't throw the error here to prevent the booking flow from crashing if email fails
+    throw error; // Throw the error so the controller can handle it
   }
 };
 
