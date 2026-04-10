@@ -115,6 +115,7 @@ const updateBooking = async (req, res) => {
     
     const loggedInUser = await User.findById(req.user.id);
     const originalStatus = booking.status;
+    const sendEmail = require('../services/email.service');
 
     if (loggedInUser.role === 'admin') {
         if (!['confirmed', 'cancelled'].includes(status)) {
@@ -122,13 +123,32 @@ const updateBooking = async (req, res) => {
         }
         booking.status = status;
 
-        if (originalStatus !== status && ['pending', 'cancellation_pending'].includes(originalStatus)) {
+        if (originalStatus !== status && (['pending', 'cancellation_pending', 'confirmed'].includes(originalStatus))) {
             const dateFrom = formatDate(booking.dateFrom);
             const dateTo = formatDate(booking.dateTo);
+            const user = await User.findById(booking.user._id);
+
+            // In-app notification
             await Notification.create({
-                user: booking.user._id, // Use _id here
+                user: booking.user._id,
                 message: `Your booking request for ${dateFrom} - ${dateTo} has been ${status}.`
             });
+
+            // Email notification
+            if (user && user.email) {
+                const subject = `Booking Update: Your request has been ${status === 'confirmed' ? 'Approved' : 'Rejected/Cancelled'}`;
+                const text = `Hello ${user.username}, your booking request for ${dateFrom} to ${dateTo} has been ${status === 'confirmed' ? 'approved' : 'rejected or cancelled'}.`;
+                const html = `
+                    <p>Hello <strong>${user.username}</strong>,</p>
+                    <p>Your booking request for the period <strong>${dateFrom}</strong> to <strong>${dateTo}</strong> has been <strong>${status === 'confirmed' ? 'approved' : 'rejected or cancelled'}</strong>.</p>
+                    <p>You can view your bookings in the <a href="http://bookingapp-static.onrender.com/bookings">My Bookings</a> section of the app.</p>
+                `;
+                try {
+                    await sendEmail(user.email, subject, text, html);
+                } catch (err) {
+                    console.error('Failed to send booking status email:', err.message);
+                }
+            }
         }
     } 
     else if (booking.user._id.toString() === req.user.id) { // User is trying to update their own booking

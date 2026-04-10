@@ -61,17 +61,30 @@ const updateUser = async (req, res) => {
 
 
     // Update status if provided and valid
-
     if (status) {
-
       if (!['pending', 'active', 'rejected'].includes(status)) {
-
         return res.status(400).json({ msg: 'Invalid status provided.' });
-
       }
-
+      const originalStatus = user.status;
       user.status = status;
 
+      // Email notification for status change
+      if (originalStatus !== status && (status === 'active' || status === 'rejected')) {
+        const sendEmail = require('../services/email.service');
+        const subject = status === 'active' ? 'Account Approved' : 'Account Rejected/Revoked';
+        const text = status === 'active' 
+          ? `Hello ${user.username}, your account for the Booking App has been approved! You can now log in and request bookings.`
+          : `Hello ${user.username}, your account access for the Booking App has been rejected or revoked.`;
+        const html = status === 'active'
+          ? `<p>Hello <strong>${user.username}</strong>,</p><p>Your account for the Booking App has been <strong>approved</strong>!</p><p>You can now <a href="http://bookingapp-static.onrender.com/login">log in</a> and start requesting bookings.</p>`
+          : `<p>Hello <strong>${user.username}</strong>,</p><p>Your account access for the Booking App has been <strong>rejected or revoked</strong>.</p>`;
+
+        try {
+          await sendEmail(user.email, subject, text, html);
+        } catch (err) {
+          console.error('Failed to send user status email:', err.message);
+        }
+      }
     }
 
 
@@ -376,7 +389,7 @@ const getEmailStatus = async (req, res) => {
 };
 
 const sendTestEmail = async (req, res) => {
-  const { recipientEmail } = req.body;
+  const { recipientEmail, template } = req.body;
   const sendEmail = require('../services/email.service');
   
   if (!recipientEmail) {
@@ -384,24 +397,49 @@ const sendTestEmail = async (req, res) => {
   }
 
   try {
-    const user = await User.findById(req.user.id);
-    const adminName = user ? user.username : 'Admin';
+    const adminUser = await User.findById(req.user.id);
+    const adminName = adminUser ? adminUser.username : 'Admin';
 
-    const subject = 'Test Email from Booking App';
-    const text = `Hello, this is a test email sent by ${adminName} to confirm the Gmail API configuration is working correctly!`;
-    const html = `<p>Hello,</p><p>This is a test email sent by <strong>${adminName}</strong> to confirm the <strong>Gmail API configuration</strong> is working correctly!</p>`;
+    let subject, text, html;
+
+    switch (template) {
+      case 'user_approved':
+        subject = 'Account Approved (Test)';
+        text = `Hello, your account for the Booking App has been approved! You can now log in and request bookings.`;
+        html = `<p>Hello,</p><p>Your account for the Booking App has been <strong>approved</strong>!</p><p>You can now <a href="http://bookingapp-static.onrender.com/login">log in</a> and start requesting bookings.</p>`;
+        break;
+      case 'user_rejected':
+        subject = 'Account Update (Test)';
+        text = `Hello, your account access for the Booking App has been rejected or revoked.`;
+        html = `<p>Hello,</p><p>Your account access for the Booking App has been <strong>rejected or revoked</strong>.</p>`;
+        break;
+      case 'booking_approved':
+        subject = 'Booking Update: Your request has been Approved (Test)';
+        text = `Hello, your booking request for the period 2026-05-01 to 2026-05-07 has been approved.`;
+        html = `<p>Hello,</p><p>Your booking request for the period <strong>2026-05-01</strong> to <strong>2026-05-07</strong> has been <strong>approved</strong>.</p><p>You can view your bookings in the <a href="http://bookingapp-static.onrender.com/bookings">My Bookings</a> section of the app.</p>`;
+        break;
+      case 'booking_rejected':
+        subject = 'Booking Update: Your request has been Rejected/Cancelled (Test)';
+        text = `Hello, your booking request for the period 2026-05-01 to 2026-05-07 has been rejected or cancelled.`;
+        html = `<p>Hello,</p><p>Your booking request for the period <strong>2026-05-01</strong> to <strong>2026-05-07</strong> has been <strong>rejected or cancelled</strong>.</p><p>You can view your bookings in the <a href="http://bookingapp-static.onrender.com/bookings">My Bookings</a> section of the app.</p>`;
+        break;
+      default:
+        subject = 'Test Email from Booking App';
+        text = `Hello, this is a basic test email sent by ${adminName} to confirm the Gmail API configuration is working correctly!`;
+        html = `<p>Hello,</p><p>This is a basic test email sent by <strong>${adminName}</strong> to confirm the <strong>Gmail API configuration</strong> is working correctly!</p>`;
+    }
 
     const result = await sendEmail(recipientEmail, subject, text, html);
     
     if (result && result.id) {
-      res.json({ msg: `Test email sent successfully to ${recipientEmail}!`, id: result.id });
+      res.json({ msg: `Test email (${template || 'basic'}) sent successfully to ${recipientEmail}!`, id: result.id });
     } else {
       res.status(500).json({ msg: 'Failed to send test email. Check server logs.' });
     }
   } catch (err) {
     console.error('Error sending test email:', err.message);
-    // Provide a more descriptive error back to the frontend
-    const errorMsg = err.response?.data?.error_description || err.message || 'Error sending test email';
+    const googleError = err.response?.data?.error?.message;
+    const errorMsg = googleError || err.response?.data?.error_description || err.message || 'Error sending test email';
     res.status(500).json({ msg: 'Email error: ' + errorMsg });
   }
 };

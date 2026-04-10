@@ -54,6 +54,7 @@ const EmailStatusChecker = () => {
     const [testLoading, setTestLoading] = useState(false);
     const [testResult, setTestResult] = useState(null);
     const [testEmail, setTestEmail] = useState('');
+    const [testTemplate, setTestTemplate] = useState('basic');
 
     useEffect(() => {
         const fetchEmailStatus = async () => {
@@ -83,7 +84,10 @@ const EmailStatusChecker = () => {
         setTestLoading(true);
         setTestResult(null);
         try {
-            const res = await api.post('/admin/test-email', { recipientEmail: testEmail });
+            const res = await api.post('/admin/test-email', { 
+                recipientEmail: testEmail,
+                template: testTemplate
+            });
             setTestResult({ success: true, message: res.data.msg });
         } catch (e) {
             console.error("Test email failed", e);
@@ -135,6 +139,25 @@ const EmailStatusChecker = () => {
                                     border: '1px solid #ccc' 
                                 }}
                             />
+                        </div>
+                        <div style={{ marginBottom: '10px' }}>
+                            <label style={{ fontSize: '0.85rem', display: 'block', marginBottom: '4px' }}>Email Template:</label>
+                            <select 
+                                value={testTemplate} 
+                                onChange={(e) => setTestTemplate(e.target.value)}
+                                style={{ 
+                                    padding: '6px', 
+                                    width: '214px', 
+                                    borderRadius: '4px', 
+                                    border: '1px solid #ccc' 
+                                }}
+                            >
+                                <option value="basic">Basic Test Email</option>
+                                <option value="user_approved">Account Approved</option>
+                                <option value="user_rejected">Account Rejected</option>
+                                <option value="booking_approved">Booking Approved</option>
+                                <option value="booking_rejected">Booking Rejected</option>
+                            </select>
                         </div>
                         <button 
                             onClick={handleSendTestEmail} 
