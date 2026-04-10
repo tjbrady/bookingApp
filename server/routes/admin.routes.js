@@ -10,7 +10,8 @@ const {
   exportBookings,
   exportUsers,
   exportScheduleSummary,
-  exportScheduleDetail
+  exportScheduleDetail,
+  getEmailStatus
 } = require('../controllers/admin.controller');
 const { getSchedule, setSchedule, saveScheduleByYear } = require('../controllers/schedule.controller');
 const { updateSetting } = require('../controllers/setting.controller');
@@ -25,6 +26,9 @@ router.get('/reports/bookings', exportBookings);
 router.get('/reports/users', exportUsers);
 router.get('/reports/schedule-summary', exportScheduleSummary);
 router.get('/reports/schedule-detail', exportScheduleDetail);
+
+// ----- Status Routes -----
+router.get('/email-status', getEmailStatus);
 
 // ----- User Management Routes -----
 router.get('/users', getUsers);

@@ -343,6 +343,38 @@ const exportScheduleSummary = async (req, res) => {
   }
 };
 
+const getEmailStatus = async (req, res) => {
+  try {
+    const requiredVars = [
+      'GMAIL_CLIENT_ID',
+      'GMAIL_CLIENT_SECRET',
+      'GMAIL_REFRESH_TOKEN',
+      'EMAIL_FROM'
+    ];
+    
+    const status = {
+      configured: true,
+      missingVars: [],
+      details: {}
+    };
+
+    requiredVars.forEach(v => {
+      if (!process.env[v]) {
+        status.configured = false;
+        status.missingVars.push(v);
+      } else {
+        // Just return the first few chars for verification if it exists
+        status.details[v] = process.env[v].substring(0, 5) + '...';
+      }
+    });
+
+    res.json(status);
+  } catch (err) {
+    console.error('Error checking email status:', err.message);
+    res.status(500).json({ msg: 'Error checking email status' });
+  }
+};
+
 module.exports = {
   getUsers,
   updateUser,
@@ -354,4 +386,5 @@ module.exports = {
   exportUsers,
   exportScheduleDetail,
   exportScheduleSummary,
+  getEmailStatus,
 };

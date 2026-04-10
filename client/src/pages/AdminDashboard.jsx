@@ -47,6 +47,59 @@ const MessageOfTheDayManager = () => {
     );
 };
 
+const EmailStatusChecker = () => {
+    const [status, setStatus] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchEmailStatus = async () => {
+            try {
+                const res = await api.get('/admin/email-status');
+                setStatus(res.data);
+            } catch (e) {
+                console.error("Could not fetch email status", e);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchEmailStatus();
+    }, []);
+
+    if (loading) return <p>Checking email status...</p>;
+    if (!status) return null;
+
+    return (
+        <section style={{ 
+            border: '1px solid #ccc', 
+            borderRadius: '4px', 
+            padding: '1rem', 
+            marginBottom: '1rem',
+            backgroundColor: status.configured ? '#f0fff0' : '#fff0f0'
+        }}>
+            <h3 style={{ marginTop: 0 }}>Email System Status</h3>
+            {status.configured ? (
+                <p style={{ color: 'green', fontWeight: 'bold' }}>
+                    ✅ Email system is configured and ready.
+                </p>
+            ) : (
+                <div style={{ color: 'red' }}>
+                    <p style={{ fontWeight: 'bold' }}>❌ Email system is NOT fully configured.</p>
+                    <p>Missing variables: {status.missingVars.join(', ')}</p>
+                    <p><em>Check your Render environment variables or .env file.</em></p>
+                </div>
+            )}
+            <div style={{ fontSize: '0.85rem', color: '#666' }}>
+                <strong>Current Config (Masked):</strong>
+                <ul style={{ margin: '5px 0' }}>
+                    {Object.entries(status.details).map(([key, value]) => (
+                        <li key={key}>{key}: <code>{value}</code></li>
+                    ))}
+                </ul>
+            </div>
+        </section>
+    );
+};
+
 
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
@@ -261,6 +314,8 @@ const AdminDashboard = () => {
           <button onClick={() => handleClearBookingsByYear(2026)} style={{backgroundColor: 'orange', color: 'white', marginRight: '10px', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer'}}>Clear 2026 Bookings</button>
           <button onClick={() => handleClearBookingsByYear(2027)} style={{backgroundColor: 'orange', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer'}}>Clear 2027 Bookings</button>
       </div>
+
+      <EmailStatusChecker />
 
       <MessageOfTheDayManager />
       
