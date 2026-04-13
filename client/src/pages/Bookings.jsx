@@ -295,7 +295,7 @@ const Bookings = () => {
                 <ul style={{marginBottom: '1rem', marginTop: '0', listStyle: 'none', padding: 0}}>
                   {myBookings.map((booking) => (
                     <li key={booking._id} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                      Night of {formatDate(booking.dateFrom)} to Night of {formatDate(booking.dateTo)} - <strong>{booking.status}</strong>
+                      Night of {formatDate(booking.dateFrom)} to Night of {formatDate(booking.dateTo)} - <strong>[{booking.colours?.join(', ')}]</strong> - <strong>{booking.status}</strong>
                       {(booking.status === 'pending' || booking.status === 'confirmed') && (
                           <button onClick={() => handleCancelBooking(booking._id, booking.status)} style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px' }}>
                               {booking.status === 'pending' ? 'Cancel' : 'Request Cancellation'}

@@ -427,6 +427,7 @@ const AdminDashboard = () => {
               <tr style={{ borderBottom: '1px solid #333' }}>
                 <th style={{ textAlign: 'left', padding: '8px' }}>User</th>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Dates</th>
+                <th style={{ textAlign: 'left', padding: '8px' }}>Colour</th>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
               </tr>
             </thead>
@@ -435,6 +436,7 @@ const AdminDashboard = () => {
                 <tr key={b._id} style={{ borderBottom: '1px solid #ddd' }}>
                   <td style={{ padding: '8px' }}>{b.user?.username || 'N/A'}</td>
                   <td style={{ padding: '8px' }}>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
+                  <td style={{ padding: '8px' }}>{b.colours?.join(', ') || 'N/A'}</td>
                   <td style={{ padding: '8px' }}>
                       <button onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')} style={{ marginRight: '5px' }}>Approve</button>
                       <button onClick={() => handleUpdateBookingStatus(b._id, 'cancelled')}>Reject</button>
@@ -456,6 +458,7 @@ const AdminDashboard = () => {
               <tr style={{ borderBottom: '1px solid #333' }}>
                 <th style={{ textAlign: 'left', padding: '8px' }}>User</th>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Dates</th>
+                <th style={{ textAlign: 'left', padding: '8px' }}>Colour</th>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
               </tr>
             </thead>
@@ -464,6 +467,7 @@ const AdminDashboard = () => {
                 <tr key={b._id} style={{ borderBottom: '1px solid #ddd' }}>
                   <td style={{ padding: '8px' }}>{b.user?.username || 'N/A'}</td>
                   <td style={{ padding: '8px' }}>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
+                  <td style={{ padding: '8px' }}>{b.colours?.join(', ') || 'N/A'}</td>
                   <td style={{ padding: '8px' }}>
                       <button onClick={() => handleUpdateBookingStatus(b._id, 'cancelled')} style={{ marginRight: '5px' }}>Approve Cancellation</button>
                       <button onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')}>Deny Cancellation</button>
@@ -485,6 +489,7 @@ const AdminDashboard = () => {
             <tr style={{ borderBottom: '1px solid #333' }}>
                 <th style={{ textAlign: 'left', padding: '8px' }}>User</th>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Dates</th>
+                <th style={{ textAlign: 'left', padding: '8px' }}>Colour</th>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
                 <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
             </tr>
@@ -494,6 +499,7 @@ const AdminDashboard = () => {
                 <tr key={b._id} style={{ opacity: b.status === 'cancelled' ? 0.5 : 1 }}>
                 <td style={{ padding: '8px' }}>{b.user?.username || 'N/A'}</td>
                 <td style={{ padding: '8px' }}>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
+                <td style={{ padding: '8px' }}>{b.colours?.join(', ') || 'N/A'}</td>
                 <td style={{ padding: '8px' }}>{b.status}</td>
                 <td style={{ padding: '8px' }}>
                     <button onClick={() => handleDeleteBooking(b._id)} style={{color: 'red'}}>Delete</button>

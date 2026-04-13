@@ -42,17 +42,27 @@ const createBooking = async (req, res) => {
     }
 
     const allowedColors = ['Blue', 'Orange', 'Yellow'];
-    const requestedMidpoint = new Date(new Date(dateFrom).getTime() + (new Date(dateTo).getTime() - new Date(dateFrom).getTime()) / 2);
-
-    const colorPeriod = await ColorSchedule.findOne({
-      startDate: { $lte: requestedMidpoint },
-      endDate: { $gte: requestedMidpoint },
+    
+    // Find all schedule periods that overlap with the requested dates
+    const overlappingPeriods = await ColorSchedule.find({
+      $or: [
+        { startDate: { $lte: dateFrom }, endDate: { $gte: dateFrom } }, // Start date inside a period
+        { startDate: { $lte: dateTo }, endDate: { $gte: dateTo } },     // End date inside a period
+        { startDate: { $gte: dateFrom }, endDate: { $lte: dateTo } }    // Period fully inside requested range
+      ]
     });
 
-    if (!colorPeriod || !allowedColors.includes(colorPeriod.color)) {
+    if (overlappingPeriods.length === 0) {
+      return res.status(400).json({ msg: 'No schedule found for the selected dates.' });
+    }
+
+    const assignedColours = [...new Set(overlappingPeriods.map(p => p.color))].filter(c => c !== '');
+    const containsRestricted = assignedColours.some(c => ['Red', 'Green'].includes(c));
+
+    if (containsRestricted || !assignedColours.every(c => allowedColors.includes(c))) {
       return res.status(400).json({ msg: 'Bookings can only be requested for Blue, Orange, or Yellow periods.' });
     }
-    
+
     const conflictingBooking = await Booking.findOne({
       service,
       status: { $in: ['confirmed', 'pending', 'cancellation_pending'] },
@@ -72,6 +82,7 @@ const createBooking = async (req, res) => {
       service,
       dateFrom,
       dateTo,
+      colours: assignedColours,
       status: 'pending',
     });
 
@@ -85,12 +96,13 @@ const createBooking = async (req, res) => {
     if (adminEmails.length > 0) {
       console.log('Attempting to send emails to:', adminEmails);
       console.log('EMAIL_USER from .env:', process.env.EMAIL_USER); // Debugging .env variable access
-      const subject = 'New Booking Request';
+      const subject = `New [${assignedColours.join(', ')}] Booking Request`;
       const dashboardLink = 'http://bookingapp-static.onrender.com';
-      const text = `User ${requestingUser.username} has requested a booking from ${formatDate(dateFrom)} to ${formatDate(dateTo)}. Please log in to the admin dashboard to approve or reject: ${dashboardLink}`;
+      const text = `User ${requestingUser.username} has requested a booking in [${assignedColours.join(', ')}] from ${formatDate(dateFrom)} to ${formatDate(dateTo)}. Please log in to the admin dashboard to approve or reject: ${dashboardLink}`;
       const html = getBaseTemplate(
-        'New Booking Request',
+        `New [${assignedColours.join(', ')}] Booking Request`,
         `<p>User <strong>${requestingUser.username}</strong> has requested a booking.</p>
+         <p><strong>Colours:</strong> ${assignedColours.join(', ')}</p>
          <p><strong>Dates:</strong> ${formatDate(dateFrom)} - ${formatDate(dateTo)}</p>
          <p>Please log in to the admin dashboard to manage this request.</p>`,
         dashboardLink,

@@ -259,6 +259,7 @@ const exportBookings = async (req, res) => {
       { label: 'Email', value: 'user.email' },
       { label: 'From Date', value: 'dateFrom' },
       { label: 'To Date', value: 'dateTo' },
+      { label: 'Colour', value: (row) => row.colours ? row.colours.join(', ') : 'N/A' },
       { label: 'Status', value: 'status' },
       { label: 'Requested At', value: 'createdAt' },
     ];
@@ -300,7 +301,7 @@ const exportScheduleDetail = async (req, res) => {
     }));
 
     const fields = [
-        { label: 'colour', value: 'color' },
+        { label: 'Colour', value: 'color' },
         { label: 'startDate', value: 'startDate' },
         { label: 'endDate', value: 'endDate' }
     ];
