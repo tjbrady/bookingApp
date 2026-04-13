@@ -1,0 +1,98 @@
+/* AdminDashboard.css - Responsive styles for the Admin Dashboard */
+
+.admin-dashboard-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.admin-dashboard-title {
+    border-bottom: 2px solid #333;
+    padding-bottom: 10px;
+    margin-top: 0;
+}
+
+/* Responsive Table Wrapper */
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    margin-bottom: 1rem;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+.admin-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 600px; /* Ensures table doesn't squash too much before scrolling kicks in */
+}
+
+.admin-table th, 
+.admin-table td {
+    text-align: left;
+    padding: 12px 8px;
+    border-bottom: 1px solid #eee;
+}
+
+.admin-table th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #ddd;
+    font-weight: bold;
+}
+
+/* Action Button Groups */
+.action-group {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.btn-admin {
+    padding: 6px 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+}
+
+.btn-admin:hover {
+    opacity: 0.8;
+}
+
+.btn-approve { background-color: #28a745; color: white; }
+.btn-decline { background-color: #ffc107; color: #333; }
+.btn-remove { background-color: #dc3545; color: white; }
+.btn-neutral { background-color: #e2e6ea; color: #333; border: 1px solid #ccc; }
+
+/* Mobile Optimisations (Screens smaller than 768px) */
+@media (max-width: 767px) {
+    .admin-dashboard-container {
+        padding: 10px;
+    }
+
+    .admin-dashboard-title {
+        font-size: 1.5rem;
+    }
+
+    .admin-table th, 
+    .admin-table td {
+        padding: 10px 6px;
+        font-size: 0.85rem;
+    }
+
+    /* Stack buttons vertically on very small screens if they don't fit */
+    @media (max-width: 480px) {
+        .action-group {
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .btn-admin {
+            width: 100%;
+            text-align: center;
+        }
+    }
+}

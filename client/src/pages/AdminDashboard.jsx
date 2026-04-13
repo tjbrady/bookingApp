@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { formatDate } from '../utils/dateUtils';
+import './AdminDashboard.css';
 
 const MessageOfTheDayManager = () => {
     const [message, setMessage] = useState('');
@@ -41,7 +42,7 @@ const MessageOfTheDayManager = () => {
                 rows="4"
                 style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
             />
-            <button onClick={handleSaveMessage} style={{ marginTop: '10px' }}>Save Message</button>
+            <button className="btn-admin btn-approve" onClick={handleSaveMessage} style={{ marginTop: '10px' }}>Save Message</button>
             {status && <p><em>{status}</em></p>}
         </section>
     );
@@ -160,16 +161,9 @@ const EmailStatusChecker = () => {
                             </select>
                         </div>
                         <button 
+                            className="btn-admin btn-approve"
                             onClick={handleSendTestEmail} 
                             disabled={testLoading}
-                            style={{ 
-                                padding: '8px 16px', 
-                                backgroundColor: '#4CAF50', 
-                                color: 'white', 
-                                border: 'none', 
-                                borderRadius: '4px', 
-                                cursor: testLoading ? 'not-allowed' : 'pointer' 
-                            }}
                         >
                             {testLoading ? 'Sending...' : 'Send Test Email'}
                         </button>
@@ -230,6 +224,7 @@ const AdminDashboard = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [exporting, setExporting] = useState(false);
   const { isAuthenticated, loading, user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -338,8 +333,6 @@ const AdminDashboard = () => {
     }
   };
 
-  const [exporting, setExporting] = useState(false);
-
   const handleExport = async (reportName, apiUrl) => {
     setExporting(true);
     try {
@@ -378,16 +371,16 @@ const AdminDashboard = () => {
       case 'pending':
         actionButtons = (
           <>
-            <button onClick={() => handleUpdateUser(u._id, 'status', 'active')} style={{ marginRight: '5px' }}>Approve</button>
-            <button onClick={() => handleUpdateUser(u._id, 'status', 'rejected')} style={{ marginRight: '5px' }}>Reject</button>
+            <button className="btn-admin btn-approve" onClick={() => handleUpdateUser(u._id, 'status', 'active')} style={{ marginRight: '5px' }}>Approve</button>
+            <button className="btn-admin btn-remove" onClick={() => handleUpdateUser(u._id, 'status', 'rejected')} style={{ marginRight: '5px' }}>Reject</button>
           </>
         );
         break;
       case 'active':
-        actionButtons = <button onClick={() => handleUpdateUser(u._id, 'status', 'rejected')} style={{ marginRight: '5px' }}>Revoke Access</button>;
+        actionButtons = <button className="btn-admin btn-remove" onClick={() => handleUpdateUser(u._id, 'status', 'rejected')} style={{ marginRight: '5px' }}>Revoke Access</button>;
         break;
       case 'rejected':
-        actionButtons = <button onClick={() => handleUpdateUser(u._id, 'status', 'active')} style={{ marginRight: '5px' }}>Re-Approve</button>;
+        actionButtons = <button className="btn-admin btn-approve" onClick={() => handleUpdateUser(u._id, 'status', 'active')} style={{ marginRight: '5px' }}>Re-Approve</button>;
         break;
       default:
         break;
@@ -396,7 +389,7 @@ const AdminDashboard = () => {
     return (
         <>
             {actionButtons}
-            <button onClick={() => handleDeleteUser(u._id, u.username)} style={{ backgroundColor: 'red', color: 'white', border: 'none', padding: '1px 6px', borderRadius: '4px' }}>Delete</button>
+            <button className="btn-admin btn-remove" onClick={() => handleDeleteUser(u._id, u.username)}>Delete</button>
         </>
     );
   };
@@ -414,22 +407,22 @@ const AdminDashboard = () => {
 
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
-      <h2 style={{ borderBottom: '2px solid #333', paddingBottom: '10px' }}>Admin Dashboard</h2>
+    <div className="admin-dashboard-container">
+      <h2 className="admin-dashboard-title">Admin Dashboard</h2>
 
       <Accordion title="Reports">
         <p>Export different data sets as CSV files.</p>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <button onClick={() => handleExport('booking_report', '/admin/reports/bookings')} disabled={exporting}>
+          <button className="btn-admin btn-neutral" onClick={() => handleExport('booking_report', '/admin/reports/bookings')} disabled={exporting}>
             {exporting ? 'Exporting...' : 'Export Booking Report (CSV)'}
           </button>
-          <button onClick={() => handleExport('user_report', '/admin/reports/users')} disabled={exporting}>
+          <button className="btn-admin btn-neutral" onClick={() => handleExport('user_report', '/admin/reports/users')} disabled={exporting}>
             {exporting ? 'Exporting...' : 'Export User Report (CSV)'}
           </button>
-          <button onClick={() => handleExport('4yr_summary_report', '/admin/reports/schedule-summary')} disabled={exporting}>
+          <button className="btn-admin btn-neutral" onClick={() => handleExport('4yr_summary_report', '/admin/reports/schedule-summary')} disabled={exporting}>
             {exporting ? 'Exporting...' : 'Export 4yr Summary Report (CSV)'}
           </button>
-          <button onClick={() => handleExport('4yr_detail_report', '/admin/reports/schedule-detail')} disabled={exporting}>
+          <button className="btn-admin btn-neutral" onClick={() => handleExport('4yr_detail_report', '/admin/reports/schedule-detail')} disabled={exporting}>
             {exporting ? 'Exporting...' : 'Export 4yr Detail Report (CSV)'}
           </button>
         </div>
@@ -438,9 +431,9 @@ const AdminDashboard = () => {
       <Accordion title="Danger Zone">
           <p style={{ color: 'red', fontWeight: 'bold' }}>Caution: These actions permanently delete booking data and should only be used when setting up a new 4-year cycle.</p>
           <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-            <button onClick={handleClearAllBookings} style={{backgroundColor: 'red', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer'}}>Clear All Bookings</button>
-            <button onClick={() => handleClearBookingsByYear(2026)} style={{backgroundColor: 'orange', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer'}}>Clear 2026 Bookings</button>
-            <button onClick={() => handleClearBookingsByYear(2027)} style={{backgroundColor: 'orange', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer'}}>Clear 2027 Bookings</button>
+            <button className="btn-admin btn-remove" onClick={handleClearAllBookings}>Clear All Bookings</button>
+            <button className="btn-admin btn-decline" onClick={() => handleClearBookingsByYear(2026)}>Clear 2026 Bookings</button>
+            <button className="btn-admin btn-decline" onClick={() => handleClearBookingsByYear(2027)}>Clear 2027 Bookings</button>
           </div>
       </Accordion>
 
@@ -454,68 +447,76 @@ const AdminDashboard = () => {
       
       <Accordion title="Pending Booking Requests" defaultOpen={pendingBookingRequests.length > 0}>
         {pendingBookingRequests.length > 0 ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #333' }}>
-                <th style={{ textAlign: 'left', padding: '8px' }}>User</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Dates</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Colour</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingBookingRequests.map(b => (
-                <tr key={b._id} style={{ borderBottom: '1px solid #ddd' }}>
-                  <td style={{ padding: '8px' }}>{b.user?.username || 'N/A'}</td>
-                  <td style={{ padding: '8px' }}>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
-                  <td style={{ padding: '8px' }}>{b.colours?.join(', ') || 'N/A'}</td>
-                  <td style={{ padding: '8px' }}>
-                      <button onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')} style={{ marginRight: '5px' }}>Approve</button>
-                      <button onClick={() => handleUpdateBookingStatus(b._id, 'denied')}>Decline</button>
-                  </td>
+          <div className="table-responsive">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Dates</th>
+                  <th>Colour</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {pendingBookingRequests.map(b => (
+                  <tr key={b._id}>
+                    <td>{b.user?.username || 'N/A'}</td>
+                    <td>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
+                    <td>{b.colours?.join(', ') || 'N/A'}</td>
+                    <td>
+                        <div className="action-group">
+                            <button className="btn-admin btn-approve" onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')}>Approve</button>
+                            <button className="btn-admin btn-decline" onClick={() => handleUpdateBookingStatus(b._id, 'denied')}>Decline</button>
+                        </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : <p>No pending booking requests.</p>}
       </Accordion>
 
       <Accordion title="Pending Cancellation Requests" defaultOpen={pendingCancellationRequests.length > 0}>
         {pendingCancellationRequests.length > 0 ? (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-              <tr style={{ borderBottom: '1px solid #333' }}>
-                <th style={{ textAlign: 'left', padding: '8px' }}>User</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Dates</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Colour</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pendingCancellationRequests.map(b => (
-                <tr key={b._id} style={{ borderBottom: '1px solid #ddd' }}>
-                  <td style={{ padding: '8px' }}>{b.user?.username || 'N/A'}</td>
-                  <td style={{ padding: '8px' }}>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
-                  <td style={{ padding: '8px' }}>{b.colours?.join(', ') || 'N/A'}</td>
-                  <td style={{ padding: '8px' }}>
-                      <button onClick={() => handleUpdateBookingStatus(b._id, 'cancelled')} style={{ marginRight: '5px' }}>Approve Cancellation</button>
-                      <button onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')}>Deny Cancellation</button>
-                  </td>
+          <div className="table-responsive">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                  <th>User</th>
+                  <th>Dates</th>
+                  <th>Colour</th>
+                  <th>Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {pendingCancellationRequests.map(b => (
+                  <tr key={b._id}>
+                    <td>{b.user?.username || 'N/A'}</td>
+                    <td>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
+                    <td>{b.colours?.join(', ') || 'N/A'}</td>
+                    <td>
+                        <div className="action-group">
+                            <button className="btn-admin btn-remove" onClick={() => handleUpdateBookingStatus(b._id, 'cancelled')}>Approve Cancellation</button>
+                            <button className="btn-admin btn-approve" onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')}>Deny Cancellation</button>
+                        </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : <p>No pending cancellation requests.</p>}
       </Accordion>
 
       <Accordion title="All Bookings">
-        <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+        <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             <label htmlFor="statusFilter"><strong>Filter by Status:</strong></label>
             <select 
                 id="statusFilter"
                 value={statusFilter} 
                 onChange={(e) => setStatusFilter(e.target.value)}
-                style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
+                style={{ padding: '8px', borderRadius: '4px', border: '1px solid #ccc' }}
             >
                 <option value="all">All</option>
                 <option value="confirmed">Confirmed</option>
@@ -527,76 +528,84 @@ const AdminDashboard = () => {
         </div>
 
         {filteredBookings.length > 0 ? (
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-            <thead>
-            <tr style={{ borderBottom: '1px solid #333' }}>
-                <th style={{ textAlign: 'left', padding: '8px' }}>User</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Dates</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Colour</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
-            </tr>
-            </thead>
-            <tbody>
-            {filteredBookings.map(b => (
-                <tr key={b._id} style={{ borderBottom: '1px solid #eee', opacity: (b.status === 'cancelled' || b.status === 'denied') ? 0.6 : 1 }}>
-                <td style={{ padding: '8px' }}>{b.user?.username || 'N/A'}</td>
-                <td style={{ padding: '8px' }}>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
-                <td style={{ padding: '8px' }}>{b.colours?.join(', ') || 'N/A'}</td>
-                <td style={{ padding: '8px', textTransform: 'capitalize' }}>{b.status === 'cancelled' ? 'cancelled (user)' : b.status}</td>
-                <td style={{ padding: '8px' }}>
-                    <div style={{ display: 'flex', gap: '5px' }}>
-                        {b.status === 'confirmed' && (
-                            <button onClick={() => handleUpdateBookingStatus(b._id, 'denied')} style={{ backgroundColor: '#ffc107', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Decline</button>
-                        )}
-                        {(b.status === 'denied' || b.status === 'cancelled' || b.status === 'pending') && (
-                            <button onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')} style={{ backgroundColor: '#28a745', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Approve</button>
-                        )}
-                        {b.status === 'pending' && (
-                            <button onClick={() => handleUpdateBookingStatus(b._id, 'denied')} style={{ backgroundColor: '#ffc107', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Decline</button>
-                        )}
-                        <button onClick={() => handleDeleteBooking(b._id)} style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Remove</button>
-                    </div>
-                </td>
+        <div className="table-responsive">
+            <table className="admin-table">
+                <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Dates</th>
+                    <th>Colour</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                 </tr>
-            ))}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                {filteredBookings.map(b => (
+                    <tr key={b._id} style={{ opacity: (b.status === 'cancelled' || b.status === 'denied') ? 0.6 : 1 }}>
+                    <td>{b.user?.username || 'N/A'}</td>
+                    <td>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
+                    <td>{b.colours?.join(', ') || 'N/A'}</td>
+                    <td style={{ textTransform: 'capitalize' }}>{b.status === 'cancelled' ? 'cancelled (user)' : b.status}</td>
+                    <td>
+                        <div className="action-group">
+                            {b.status === 'confirmed' && (
+                                <button className="btn-admin btn-decline" onClick={() => handleUpdateBookingStatus(b._id, 'denied')}>Decline</button>
+                            )}
+                            {(b.status === 'denied' || b.status === 'cancelled' || b.status === 'pending') && (
+                                <button className="btn-admin btn-approve" onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')}>Approve</button>
+                            )}
+                            {b.status === 'pending' && (
+                                <button className="btn-admin btn-decline" onClick={() => handleUpdateBookingStatus(b._id, 'denied')}>Decline</button>
+                            )}
+                            <button className="btn-admin btn-remove" onClick={() => handleDeleteBooking(b._id)}>Remove</button>
+                        </div>
+                    </td>
+                    </tr>
+                ))}
+                </tbody>
+            </table>
+        </div>
         ) : <p>No bookings found for the selected filter.</p>}
       </Accordion>
 
       <Accordion title="User Management">
-        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '1px solid #333' }}>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Username</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Email</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Status</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Role</th>
-                <th style={{ textAlign: 'left', padding: '8px' }}>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map(u => (
-              <tr key={u._id} style={{ borderBottom: '1px solid #ddd' }}>
-                <td style={{ padding: '8px' }}>{u.username}</td>
-                <td style={{ padding: '8px' }}>{u.email}</td>
-                <td style={{ padding: '8px' }}>{u.status}</td>
-                <td style={{ padding: '8px' }}>
-                    <select 
-                        value={u.role} 
-                        onChange={(e) => handleUpdateUser(u._id, 'role', e.target.value)}
-                        style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
-                    >
-                        <option value="user">user</option>
-                        <option value="admin">admin</option>
-                    </select>
-                </td>
-                <td style={{ padding: '8px' }}>{renderUserActions(u)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="table-responsive">
+            <table className="admin-table">
+              <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Role</th>
+                    <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {users.map(u => (
+                  <tr key={u._id}>
+                    <td>{u.username}</td>
+                    <td>{u.email}</td>
+                    <td>{u.status}</td>
+                    <td>
+                        <select 
+                            value={u.role} 
+                            onChange={(e) => handleUpdateUser(u._id, 'role', e.target.value)}
+                            style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
+                        >
+                            <option value="user">user</option>
+                            <option value="admin">admin</option>
+                        </select>
+                    </td>
+                    <td>
+                        <div className="action-group">
+                            {renderUserActions(u)}
+                        </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+        </div>
       </Accordion>
     </div>
   );
