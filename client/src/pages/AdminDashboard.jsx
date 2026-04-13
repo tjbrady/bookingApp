@@ -199,11 +199,37 @@ const EmailStatusChecker = () => {
 };
 
 
+const Accordion = ({ title, children, defaultOpen = false }) => {
+    const [isOpen, setIsOpen] = useState(defaultOpen);
+    return (
+        <div style={{ border: '1px solid #ccc', borderRadius: '4px', marginBottom: '1rem', overflow: 'hidden' }}>
+            <div 
+                onClick={() => setIsOpen(!isOpen)} 
+                style={{ 
+                    backgroundColor: '#f8f9fa', 
+                    padding: '10px 15px', 
+                    cursor: 'pointer', 
+                    display: 'flex', 
+                    justifyContent: 'space-between', 
+                    alignItems: 'center',
+                    borderBottom: isOpen ? '1px solid #ccc' : 'none',
+                    fontWeight: 'bold'
+                }}
+            >
+                <span>{title}</span>
+                <span>{isOpen ? '▲' : '▼'}</span>
+            </div>
+            {isOpen && <div style={{ padding: '15px' }}>{children}</div>}
+        </div>
+    );
+};
+
 const AdminDashboard = () => {
   const [users, setUsers] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const { isAuthenticated, loading, user } = useContext(AuthContext);
   const navigate = useNavigate();
 
@@ -381,13 +407,17 @@ const AdminDashboard = () => {
   const pendingBookingRequests = bookings.filter(b => b.status === 'pending');
   const pendingCancellationRequests = bookings.filter(b => b.status === 'cancellation_pending');
 
+  const filteredBookings = bookings.filter(b => {
+      if (statusFilter === 'all') return true;
+      return b.status === statusFilter;
+  });
+
 
   return (
-    <div>
-      <h2>Admin Dashboard</h2>
+    <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '20px' }}>
+      <h2 style={{ borderBottom: '2px solid #333', paddingBottom: '10px' }}>Admin Dashboard</h2>
 
-      <section style={{ border: '1px solid #ccc', borderRadius: '4px', padding: '1rem', marginBottom: '2rem' }}>
-        <h3>Reports</h3>
+      <Accordion title="Reports">
         <p>Export different data sets as CSV files.</p>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button onClick={() => handleExport('booking_report', '/admin/reports/bookings')} disabled={exporting}>
@@ -403,24 +433,26 @@ const AdminDashboard = () => {
             {exporting ? 'Exporting...' : 'Export 4yr Detail Report (CSV)'}
           </button>
         </div>
-      </section>
+      </Accordion>
       
-      <div style={{ marginTop: '1rem', marginBottom: '1rem', padding: '1rem', border: '2px solid red', borderRadius: '4px' }}>
-          <h4 style={{marginTop: 0, color: 'red'}}>Danger Zone</h4>
-          <p>These actions permanently delete booking data and should only be used when setting up a new 4-year cycle.</p>
-          <button onClick={handleClearAllBookings} style={{backgroundColor: 'red', color: 'white', marginRight: '10px', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer'}}>Clear All Bookings</button>
-          <button onClick={() => handleClearBookingsByYear(2026)} style={{backgroundColor: 'orange', color: 'white', marginRight: '10px', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer'}}>Clear 2026 Bookings</button>
-          <button onClick={() => handleClearBookingsByYear(2027)} style={{backgroundColor: 'orange', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer'}}>Clear 2027 Bookings</button>
-      </div>
+      <Accordion title="Danger Zone">
+          <p style={{ color: 'red', fontWeight: 'bold' }}>Caution: These actions permanently delete booking data and should only be used when setting up a new 4-year cycle.</p>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button onClick={handleClearAllBookings} style={{backgroundColor: 'red', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer'}}>Clear All Bookings</button>
+            <button onClick={() => handleClearBookingsByYear(2026)} style={{backgroundColor: 'orange', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer'}}>Clear 2026 Bookings</button>
+            <button onClick={() => handleClearBookingsByYear(2027)} style={{backgroundColor: 'orange', color: 'white', border: 'none', padding: '8px 12px', borderRadius: '4px', cursor: 'pointer'}}>Clear 2027 Bookings</button>
+          </div>
+      </Accordion>
 
-      <EmailStatusChecker />
+      <Accordion title="Email System Status">
+        <EmailStatusChecker />
+      </Accordion>
 
-      <MessageOfTheDayManager />
+      <Accordion title="Home Page Message">
+        <MessageOfTheDayManager />
+      </Accordion>
       
-      <hr style={{ margin: '2rem 0' }} />
-
-      <section>
-        <h3>Pending Booking Requests</h3>
+      <Accordion title="Pending Booking Requests" defaultOpen={pendingBookingRequests.length > 0}>
         {pendingBookingRequests.length > 0 ? (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -439,19 +471,16 @@ const AdminDashboard = () => {
                   <td style={{ padding: '8px' }}>{b.colours?.join(', ') || 'N/A'}</td>
                   <td style={{ padding: '8px' }}>
                       <button onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')} style={{ marginRight: '5px' }}>Approve</button>
-                      <button onClick={() => handleUpdateBookingStatus(b._id, 'cancelled')}>Reject</button>
+                      <button onClick={() => handleUpdateBookingStatus(b._id, 'denied')}>Decline</button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
         ) : <p>No pending booking requests.</p>}
-      </section>
+      </Accordion>
 
-      <hr style={{ margin: '2rem 0' }} />
-
-      <section>
-        <h3>Pending Cancellation Requests</h3>
+      <Accordion title="Pending Cancellation Requests" defaultOpen={pendingCancellationRequests.length > 0}>
         {pendingCancellationRequests.length > 0 ? (
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
@@ -477,13 +506,27 @@ const AdminDashboard = () => {
             </tbody>
           </table>
         ) : <p>No pending cancellation requests.</p>}
-      </section>
+      </Accordion>
 
-      <hr style={{ margin: '2rem 0' }} />
+      <Accordion title="All Bookings">
+        <div style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <label htmlFor="statusFilter"><strong>Filter by Status:</strong></label>
+            <select 
+                id="statusFilter"
+                value={statusFilter} 
+                onChange={(e) => setStatusFilter(e.target.value)}
+                style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
+            >
+                <option value="all">All</option>
+                <option value="confirmed">Confirmed</option>
+                <option value="denied">Denied</option>
+                <option value="pending">Pending</option>
+                <option value="cancelled">Cancelled (User)</option>
+                <option value="cancellation_pending">Cancellation Pending</option>
+            </select>
+        </div>
 
-      <section>
-        <h3>All Bookings</h3>
-        {bookings.length > 0 ? (
+        {filteredBookings.length > 0 ? (
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
             <tr style={{ borderBottom: '1px solid #333' }}>
@@ -495,26 +538,34 @@ const AdminDashboard = () => {
             </tr>
             </thead>
             <tbody>
-            {bookings.map(b => (
-                <tr key={b._id} style={{ opacity: b.status === 'cancelled' ? 0.5 : 1 }}>
+            {filteredBookings.map(b => (
+                <tr key={b._id} style={{ borderBottom: '1px solid #eee', opacity: (b.status === 'cancelled' || b.status === 'denied') ? 0.6 : 1 }}>
                 <td style={{ padding: '8px' }}>{b.user?.username || 'N/A'}</td>
                 <td style={{ padding: '8px' }}>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
                 <td style={{ padding: '8px' }}>{b.colours?.join(', ') || 'N/A'}</td>
-                <td style={{ padding: '8px' }}>{b.status}</td>
+                <td style={{ padding: '8px', textTransform: 'capitalize' }}>{b.status === 'cancelled' ? 'cancelled (user)' : b.status}</td>
                 <td style={{ padding: '8px' }}>
-                    <button onClick={() => handleDeleteBooking(b._id)} style={{color: 'red'}}>Delete</button>
+                    <div style={{ display: 'flex', gap: '5px' }}>
+                        {b.status === 'confirmed' && (
+                            <button onClick={() => handleUpdateBookingStatus(b._id, 'denied')} style={{ backgroundColor: '#ffc107', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Decline</button>
+                        )}
+                        {(b.status === 'denied' || b.status === 'cancelled' || b.status === 'pending') && (
+                            <button onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')} style={{ backgroundColor: '#28a745', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Approve</button>
+                        )}
+                        {b.status === 'pending' && (
+                            <button onClick={() => handleUpdateBookingStatus(b._id, 'denied')} style={{ backgroundColor: '#ffc107', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Decline</button>
+                        )}
+                        <button onClick={() => handleDeleteBooking(b._id)} style={{ backgroundColor: '#dc3545', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }}>Remove</button>
+                    </div>
                 </td>
                 </tr>
             ))}
             </tbody>
         </table>
-        ) : <p>No bookings have been made yet.</p>}
-      </section>
+        ) : <p>No bookings found for the selected filter.</p>}
+      </Accordion>
 
-      <hr style={{ margin: '2rem 0' }} />
-
-      <section>
-        <h3>User Management</h3>
+      <Accordion title="User Management">
         <table style={{ width: '100%', borderCollapse: 'collapse' }}>
           <thead>
             <tr style={{ borderBottom: '1px solid #333' }}>
@@ -546,7 +597,7 @@ const AdminDashboard = () => {
             ))}
           </tbody>
         </table>
-      </section>
+      </Accordion>
     </div>
   );
 };

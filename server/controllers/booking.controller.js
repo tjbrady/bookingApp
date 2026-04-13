@@ -135,8 +135,8 @@ const updateBooking = async (req, res) => {
     const sendEmail = require('../services/email.service');
 
     if (loggedInUser.role === 'admin') {
-        if (!['confirmed', 'cancelled'].includes(status)) {
-            return res.status(400).json({ msg: 'Admin can only set status to "confirmed" or "cancelled".' });
+        if (!['confirmed', 'cancelled', 'denied'].includes(status)) {
+            return res.status(400).json({ msg: 'Admin can only set status to "confirmed", "cancelled", or "denied".' });
         }
         booking.status = status;
 
@@ -148,17 +148,17 @@ const updateBooking = async (req, res) => {
             // In-app notification
             await Notification.create({
                 user: booking.user._id,
-                message: `Your booking request for ${dateFrom} - ${dateTo} has been ${status}.`
+                message: `Your booking request for ${dateFrom} - ${dateTo} has been ${status === 'denied' ? 'denied' : status}.`
             });
 
             // Email notification
             if (user && user.email) {
-                const subject = `Booking Update: Your request has been ${status === 'confirmed' ? 'Approved' : 'Rejected/Cancelled'}`;
-                const text = `Hello ${user.username}, your booking request for ${dateFrom} to ${dateTo} has been ${status === 'confirmed' ? 'approved' : 'rejected or cancelled'}.`;
+                const subject = `Booking Update: Your request has been ${status === 'confirmed' ? 'Approved' : (status === 'denied' ? 'Denied' : 'Cancelled')}`;
+                const text = `Hello ${user.username}, your booking request for ${dateFrom} to ${dateTo} has been ${status === 'confirmed' ? 'approved' : (status === 'denied' ? 'denied' : 'cancelled')}.`;
                 const html = getBaseTemplate(
-                    `Booking ${status === 'confirmed' ? 'Approved' : 'Rejected'}`,
+                    `Booking ${status === 'confirmed' ? 'Approved' : (status === 'denied' ? 'Denied' : 'Cancelled')}`,
                     `<p>Hello <strong>${user.username}</strong>,</p>
-                     <p>Your booking request for the period <strong>${dateFrom}</strong> to <strong>${dateTo}</strong> has been <strong>${status === 'confirmed' ? 'approved' : 'rejected or cancelled'}</strong>.</p>`,
+                     <p>Your booking request for the period <strong>${dateFrom}</strong> to <strong>${dateTo}</strong> has been <strong>${status === 'confirmed' ? 'approved' : (status === 'denied' ? 'denied' : 'cancelled')}</strong>.</p>`,
                     'https://bookingapp-static.onrender.com/bookings',
                     'View My Bookings'
                 );
