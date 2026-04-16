@@ -510,5 +510,6 @@ module.exports = {
   exportScheduleDetail,
   exportScheduleSummary,
   getEmailStatus,
-  sendTestEmail,
-};
+  getProjectSummary,
+  sendTestEmail
+  };
