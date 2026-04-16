@@ -400,15 +400,24 @@ const getProjectSummary = async (req, res) => {
     const path = require('path');
     const summaryPath = path.join(__dirname, '../projectSummary.md');
     
+    console.log('Attempting to read project summary from:', summaryPath);
+    
     if (!fs.existsSync(summaryPath)) {
-      return res.status(404).json({ msg: 'Project summary file not found.' });
+      console.error('Project summary file not found at:', summaryPath);
+      return res.status(404).json({ 
+        msg: 'Project summary file not found.',
+        path: summaryPath 
+      });
     }
 
     const content = fs.readFileSync(summaryPath, 'utf8');
     res.json({ content });
   } catch (err) {
     console.error('Error reading project summary:', err.message);
-    res.status(500).json({ msg: 'Server error reading project summary' });
+    res.status(500).json({ 
+      msg: 'Server error reading project summary',
+      error: err.message 
+    });
   }
 };
 

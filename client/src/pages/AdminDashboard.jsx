@@ -239,7 +239,8 @@ const AdminDashboard = () => {
       setSummaryContent(res.data.content);
       setShowSummary(true);
     } catch (err) {
-      setError('Failed to fetch project summary.');
+      const errorMsg = err.response?.data?.msg || 'Failed to fetch project summary.';
+      setError(errorMsg);
     } finally {
       setLoadingSummary(false);
     }
