@@ -2,11 +2,16 @@
 
 This file summarizes the development progress of the Booking App as of the last session.
 
-## Current Status
+## Current Status (2026-04-16)
 
 The application is a full-stack booking system with advanced, role-based scheduling and approval workflows.
 
+### Project History & Documentation
+*   **Project Summary:** The authoritative history and technical overview of the project is now maintained in `/server/projectSummary.md`. 
+*   **Dashboard Integration:** This summary is accessible directly via the Admin Dashboard in a dedicated full-screen modal, allowing for easy review of the project's evolution.
+
 ### Backend (`/server`)
+... (rest of the file)
 
 *   **Framework:** Node.js with Express.
 *   **Database:** MongoDB, connected via Mongoose.

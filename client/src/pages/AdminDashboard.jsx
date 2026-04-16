@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
+import ReactMarkdown from 'react-markdown';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { formatDate } from '../utils/dateUtils';
@@ -225,8 +226,24 @@ const AdminDashboard = () => {
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [exporting, setExporting] = useState(false);
+  const [showSummary, setShowSummary] = useState(false);
+  const [summaryContent, setSummaryContent] = useState('');
+  const [loadingSummary, setLoadingSummary] = useState(false);
   const { isAuthenticated, loading, user } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const fetchSummary = async () => {
+    setLoadingSummary(true);
+    try {
+      const res = await api.get('/admin/project-summary');
+      setSummaryContent(res.data.content);
+      setShowSummary(true);
+    } catch (err) {
+      setError('Failed to fetch project summary.');
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
 
   const fetchData = async () => {
     setLoadingData(true);
@@ -411,7 +428,12 @@ const AdminDashboard = () => {
       <h2 className="admin-dashboard-title">Admin Dashboard</h2>
 
       <Accordion title="Reports">
-        <p>Export different data sets as CSV files.</p>
+        <p>Project documentation and CSV data exports.</p>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '15px' }}>
+          <button className="btn-admin btn-summary" onClick={fetchSummary} disabled={loadingSummary}>
+            {loadingSummary ? 'Loading...' : 'View Project Summary'}
+          </button>
+        </div>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           <button className="btn-admin btn-neutral" onClick={() => handleExport('booking_report', '/admin/reports/bookings')} disabled={exporting}>
             {exporting ? 'Exporting...' : 'Export Booking Report (CSV)'}
@@ -607,6 +629,20 @@ const AdminDashboard = () => {
             </table>
         </div>
       </Accordion>
+
+      {showSummary && (
+        <div className="summary-modal-overlay" onClick={() => setShowSummary(false)}>
+          <div className="summary-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="summary-modal-close" onClick={() => setShowSummary(false)}>&times;</button>
+            <div className="summary-markdown-body">
+              <ReactMarkdown>{summaryContent}</ReactMarkdown>
+            </div>
+            <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                <button className="btn-admin btn-neutral" onClick={() => setShowSummary(false)}>Close Summary</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

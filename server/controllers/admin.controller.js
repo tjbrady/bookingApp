@@ -394,6 +394,24 @@ const getEmailStatus = async (req, res) => {
   }
 };
 
+const getProjectSummary = async (req, res) => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const summaryPath = path.join(__dirname, '../projectSummary.md');
+    
+    if (!fs.existsSync(summaryPath)) {
+      return res.status(404).json({ msg: 'Project summary file not found.' });
+    }
+
+    const content = fs.readFileSync(summaryPath, 'utf8');
+    res.json({ content });
+  } catch (err) {
+    console.error('Error reading project summary:', err.message);
+    res.status(500).json({ msg: 'Server error reading project summary' });
+  }
+};
+
 const sendTestEmail = async (req, res) => {
   const { recipientEmail, template } = req.body;
   const sendEmail = require('../services/email.service');
