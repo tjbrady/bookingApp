@@ -47,9 +47,10 @@ The application is a full-stack booking system with advanced, role-based schedul
 
 ## To Resume Development
 
-1.  **Start the Backend:** Open a terminal in the `/server` directory and run `npm run dev`.
-2.  **Start the Frontend:** Open a second terminal in the `/client` directory and run `npm run dev`.
-3.  Open your browser to the frontend address.
+1.  **Review the Project Summary:** Always start by reviewing `/server/projectSummary.md` (accessible via the Admin Dashboard) to understand the project's evolution, current status, and roadmap.
+2.  **Start the Backend:** Open a terminal in the `/server` directory and run `npm run dev`.
+3.  **Start the Frontend:** Open a second terminal in the `/client` directory and run `npm run dev`.
+4.  **Sync Changes:** Ensure the local repository is synced with GitHub before starting new work.
 
 ---
 

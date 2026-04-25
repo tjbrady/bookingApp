@@ -25,6 +25,10 @@ const Bookings = () => {
   const { isAuthenticated, user, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  const currentYear = new Date().getFullYear();
+  const currentMonth = new Date().getMonth();
+  const yearsToShow = [currentYear, currentYear + 1];
+
   const fetchAllData = async () => {
     setLoadingData(true);
     try {
@@ -55,6 +59,20 @@ const Bookings = () => {
       navigate('/login');
     }
   }, [isAuthenticated, navigate, authLoading]);
+
+  // Auto-scroll to current month
+  useEffect(() => {
+    if (!loadingData && !authLoading && isAuthenticated) {
+      const targetId = `month-${currentYear}-${currentMonth}`;
+      const timer = setTimeout(() => {
+        const element = document.getElementById(targetId);
+        if (element) {
+          element.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [loadingData, authLoading, isAuthenticated, currentYear, currentMonth]);
 
   const scheduleMap = useMemo(() => {
     const map = new Map();
@@ -248,7 +266,7 @@ const Bookings = () => {
     }
 
     return (
-        <div className="month-container" key={monthIndex}>
+        <div className="month-container" key={monthIndex} id={`month-${year}-${monthIndex}`}>
             <div className="month-header">{monthName} {year}</div>
             <div className="day-grid">
                 {['S', 'M', 'T', 'W', 'T', 'F', 'S'].map((d, i) => <div key={i} className="day-header">{d}</div>)}
@@ -267,16 +285,11 @@ const Bookings = () => {
     return (
       <div>
         <div className="bookings-sticky-header">
-
-          {/* Single Row, Three-Column Layout */}
+          {/* ... existing header code ... */}
           <div style={{ display: 'flex', gap: '2rem', alignItems: 'baseline', flexWrap: 'wrap' }}>
-
-            {/* Column 1: Main Heading */}
             <div className="header-title-column" style={{ flex: '1 1 200px', minWidth: '200px' }}>
               <h2 style={{ margin: 0, padding: 0, lineHeight: 1.2 }}>Booking Calendar & My Requests</h2>
             </div>
-
-            {/* Column 2: My Bookings List */}
             <div className="header-bookings-list-column" style={{ flex: '2 1 400px', minWidth: '300px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0' }}>
                 <h3 style={{ margin: 0, padding: 0, lineHeight: 1.2 }}>My Booking Requests</h3>
@@ -309,8 +322,6 @@ const Bookings = () => {
                 </ul>
               )}
             </div>
-
-            {/* Column 3: Instructions */}
             <div className="header-instructions-column instructions-box" style={{ flex: '1 1 450px' }}>
               <h3 style={{ margin: '0', padding: 0, lineHeight: 1.2 }}>How to Request a Booking:</h3>
               <ul style={{ listStyleType: 'none', padding: '0', margin: '0' }}>
@@ -321,23 +332,19 @@ const Bookings = () => {
               </ul>
             </div>
           </div>
-          
-          {/* Selection and Request buttons remain at the bottom */}
           {selection.start && selection.end && (
             <div className="header-action-area" style={{textAlign: 'center', margin: '1rem 0'}}>
               <button onClick={handleRequestBooking}>Request Booking: {formatDate(selection.start)} - {formatDate(selection.end)}</button>
               <button onClick={() => setSelection({start: null, end: null})} style={{marginLeft: '10px'}}>Clear Selection</button>
             </div>
           )}
-
-        </div> {/* End bookings-sticky-header */}
-
-        <div className="calendar-grid-container">
-          {Array.from({ length: 12 }, (_, i) => renderMonth(2026, i))}
         </div>
-        <div className="calendar-grid-container" style={{marginTop: '2rem'}}>
-          {Array.from({ length: 12 }, (_, i) => renderMonth(2027, i))}
-        </div>
+
+        {yearsToShow.map((year, idx) => (
+          <div key={year} className="calendar-grid-container" style={{ marginTop: idx > 0 ? '2rem' : '0' }}>
+            {Array.from({ length: 12 }, (_, i) => renderMonth(year, i))}
+          </div>
+        ))}
       </div>
     );
 };

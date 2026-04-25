@@ -25,11 +25,14 @@ The heart of the application is the rotating occupancy schedule, which follows a
 *   **Maintenance:** The schedule is **not** algorithmic. Admin users manually input dates from management documentation into the `FourYearCycleSetup` dashboard.
 
 ## 4. Roadmap & Future Developments
-*   **Dynamic Year Shifting:** Automating the transition of the "Year 1 / Year 2" user view based on the current calendar year.
 *   **Advanced Analytics:** Enhanced reporting on occupancy rates and owner usage patterns.
 *   **UI/UX Refinements:** Ongoing polish of the mobile experience and schedule editor responsiveness.
 
 ## 5. Evolution Log (Chronological)
+
+### 25Apr26
+*   **UX:** Implemented **Dynamic Year Shifting** on the Bookings page, ensuring the calendar always displays the current and subsequent year automatically.
+*   **UX:** Added **Auto-Scrolling** functionality that smoothly centers the current month in the viewport upon page load, improving navigation efficiency.
 
 ### 16Apr26
 *   **Feature:** Integrated "Project Evolution Summary" viewer into the Admin Dashboard.
