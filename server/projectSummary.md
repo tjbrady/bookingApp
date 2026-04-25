@@ -33,6 +33,7 @@ The heart of the application is the rotating occupancy schedule, which follows a
 ### 25Apr26
 *   **UX:** Implemented **Dynamic Year Shifting** on the Bookings page, ensuring the calendar always displays the current and subsequent year automatically.
 *   **UX:** Added **Auto-Scrolling** functionality that smoothly centers the current month in the viewport upon page load, improving navigation efficiency.
+*   **UX:** Enhanced the **Project Summary Modal** with a persistent header and close button, ensuring easy dismissal regardless of scroll depth.
 
 ### 16Apr26
 *   **Feature:** Integrated "Project Evolution Summary" viewer into the Admin Dashboard.

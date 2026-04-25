@@ -634,12 +634,16 @@ const AdminDashboard = () => {
       {showSummary && (
         <div className="summary-modal-overlay" onClick={() => setShowSummary(false)}>
           <div className="summary-modal-content" onClick={(e) => e.stopPropagation()}>
-            <button className="summary-modal-close" onClick={() => setShowSummary(false)}>&times;</button>
-            <div className="summary-markdown-body">
-              <ReactMarkdown>{summaryContent}</ReactMarkdown>
+            <div className="summary-modal-header">
+              <button className="summary-modal-close" onClick={() => setShowSummary(false)}>&times;</button>
             </div>
-            <div style={{ marginTop: '30px', textAlign: 'center' }}>
-                <button className="btn-admin btn-neutral" onClick={() => setShowSummary(false)}>Close Summary</button>
+            <div className="summary-modal-body">
+              <div className="summary-markdown-body">
+                <ReactMarkdown>{summaryContent}</ReactMarkdown>
+              </div>
+              <div style={{ marginTop: '30px', textAlign: 'center' }}>
+                  <button className="btn-admin btn-neutral" onClick={() => setShowSummary(false)}>Close Summary</button>
+              </div>
             </div>
           </div>
         </div>
