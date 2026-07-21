@@ -31,6 +31,8 @@ The heart of the application is the rotating occupancy schedule, which follows a
 ## 5. Evolution Log (Chronological)
 
 ### 21Jul26
+*   **Admin:** Refactored the `FourYearCycleSetup` page to support infinite dynamic years. The hardcoded year arrays were removed in favor of a system that auto-discovers years from the database.
+*   **Admin:** Introduced a "+ Add Year" function and implemented descending column ordering (newest years on the left) with sticky headers and horizontal scrolling, significantly improving data entry for future schedules.
 *   **UX:** Implemented a **24-Month Rolling Calendar** with a 2-month historical buffer on the Bookings page. This ensures users always see relevant dates while maintaining immediate context of recent bookings.
 *   **UX:** Enhanced **Mobile Navbar UI** by fixing dropdown text visibility (inverted contrast) and increasing touch target sizes for better responsiveness on small screens.
 
