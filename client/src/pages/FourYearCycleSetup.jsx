@@ -7,11 +7,27 @@ import { AuthContext } from '../context/AuthContext.jsx';
 
 // This function transforms the flat array from the API into the nested object structure
 const transformScheduleToStructured = (flatSchedule) => {
-    const years = [2026, 2027, 2028, 2029];
     const colors = ['Blue', 'Red', 'Orange', 'Yellow', 'Green'];
     const defaultEntry = { startDate: '', endDate: '' };
-
     const structured = {};
+
+    // 1. Discover all years present in the data
+    const yearSet = new Set();
+    if (Array.isArray(flatSchedule)) {
+        flatSchedule.forEach(entry => {
+            const year = new Date(entry.startDate).getUTCFullYear();
+            yearSet.add(year);
+        });
+    }
+    
+    // Ensure at least the current year and next year exist for context if DB is empty
+    const currentYear = new Date().getFullYear();
+    yearSet.add(currentYear);
+    yearSet.add(currentYear + 1);
+
+    const years = Array.from(yearSet).sort((a, b) => a - b);
+
+    // 2. Initialize structured object for all discovered years
     years.forEach(year => {
         structured[year] = {};
         colors.forEach(color => {
