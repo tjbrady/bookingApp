@@ -27,7 +27,16 @@ const Bookings = () => {
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
-  const yearsToShow = [currentYear, currentYear + 1];
+  
+  const monthsToShow = useMemo(() => {
+    const months = [];
+    // Start 2 months in the past, render a total of 26 months (2 past + current + 23 future)
+    for (let i = -2; i < 24; i++) {
+      const date = new Date(currentYear, currentMonth + i, 1);
+      months.push({ year: date.getFullYear(), month: date.getMonth() });
+    }
+    return months;
+  }, [currentYear, currentMonth]);
 
   const fetchAllData = async () => {
     setLoadingData(true);
@@ -340,11 +349,13 @@ const Bookings = () => {
           )}
         </div>
 
-        {yearsToShow.map((year, idx) => (
-          <div key={year} className="calendar-grid-container" style={{ marginTop: idx > 0 ? '2rem' : '0' }}>
-            {Array.from({ length: 12 }, (_, i) => renderMonth(year, i))}
-          </div>
-        ))}
+        <div className="calendar-grid-container">
+          {monthsToShow.map(({ year, month }) => (
+            <React.Fragment key={`${year}-${month}`}>
+              {renderMonth(year, month)}
+            </React.Fragment>
+          ))}
+        </div>
       </div>
     );
 };

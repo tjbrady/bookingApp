@@ -45,13 +45,13 @@
   position: absolute;
   top: 100%; /* Position below the parent link */
   left: 0;
-  background-color: transparent; /* Make background transparent */
+  background-color: rgba(255, 255, 255, 0.95); /* Solid, slightly transparent white background */
   list-style: none;
-  padding: 0;
+  padding: 0.5rem 0;
   margin: 0;
   min-width: 180px;
-  border-radius: 4px;
-  box-shadow: none; /* Remove box shadow */
+  border-radius: 6px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); /* Add box shadow back for depth */
   z-index: 1001; /* Above the navbar itself */
 }
 
@@ -68,8 +68,8 @@
 .navbar-dropdown a,
 .navbar-dropdown button {
   display: block;
-  padding: 10px 15px;
-  color: #ffffff;
+  padding: 12px 20px; /* Increase padding for better mobile touch targets */
+  color: #333333; /* Dark text for contrast against white background */
   text-decoration: none;
   background: none;
   border: none;
@@ -77,11 +77,13 @@
   text-align: left;
   cursor: pointer;
   font-size: 1rem;
+  font-weight: 500;
 }
 
 .navbar-dropdown a:hover,
 .navbar-dropdown button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: #f0f0f0; /* Light gray hover state */
+  color: #000000;
 }
 
 /* Ensure span in navbar-dropdown-parent is visible and styled like a link */
