@@ -30,6 +30,10 @@ The heart of the application is the rotating occupancy schedule, which follows a
 
 ## 5. Evolution Log (Chronological)
 
+### 21Jul26
+*   **UX:** Implemented a **24-Month Rolling Calendar** with a 2-month historical buffer on the Bookings page. This ensures users always see relevant dates while maintaining immediate context of recent bookings.
+*   **UX:** Enhanced **Mobile Navbar UI** by fixing dropdown text visibility (inverted contrast) and increasing touch target sizes for better responsiveness on small screens.
+
 ### 25Apr26
 *   **UX:** Implemented **Dynamic Year Shifting** on the Bookings page, ensuring the calendar always displays the current and subsequent year automatically.
 *   **UX:** Added **Auto-Scrolling** functionality that smoothly centers the current month in the viewport upon page load, improving navigation efficiency.
