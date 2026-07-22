@@ -197,13 +197,17 @@ const PushNotificationStatusChecker = () => {
     const [testLoading, setTestLoading] = useState(false);
     const [testResult, setTestResult] = useState(null);
     const [testMessage, setTestMessage] = useState('');
+    const [testTarget, setTestTarget] = useState('self');
+    const [testUsername, setTestUsername] = useState('');
 
     const handleSendTestPush = async () => {
         setTestLoading(true);
         setTestResult(null);
         try {
             const res = await api.post('/admin/test-push', { 
-                message: testMessage
+                message: testMessage,
+                target: testTarget,
+                username: testTarget === 'user' ? testUsername : undefined
             });
             setTestResult({ success: true, message: res.data.msg });
         } catch (e) {
@@ -226,13 +230,49 @@ const PushNotificationStatusChecker = () => {
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
                 <div>
                     <p style={{ margin: '0 0 10px 0' }}>
-                        Use this utility to dispatch a test Web Push notification to all of <strong>your registered devices</strong>.
+                        Use this utility to dispatch a test Web Push notification.
                     </p>
                     <p style={{ fontSize: '0.85rem', color: '#666', margin: '0 0 10px 0' }}>
-                        Make sure you have clicked <strong>🔔 Enable Push</strong> in the top navigation bar on the browser/device you want to test!
+                        <strong>Target options:</strong> Send to yourself, broadcast to all subscribed devices, or target a specific user.
                     </p>
                 </div>
                 <div style={{ textAlign: 'right', minWidth: '250px' }}>
+                    <div style={{ marginBottom: '10px' }}>
+                        <label style={{ fontSize: '0.85rem', display: 'block', marginBottom: '4px' }}>Target Audience:</label>
+                        <select 
+                            value={testTarget} 
+                            onChange={(e) => setTestTarget(e.target.value)}
+                            style={{ 
+                                padding: '6px', 
+                                width: '214px', 
+                                borderRadius: '4px', 
+                                border: '1px solid #ccc' 
+                            }}
+                        >
+                            <option value="self">Myself (Admin)</option>
+                            <option value="all">All Subscribed Users</option>
+                            <option value="user">Specific User</option>
+                        </select>
+                    </div>
+
+                    {testTarget === 'user' && (
+                        <div style={{ marginBottom: '10px' }}>
+                            <label style={{ fontSize: '0.85rem', display: 'block', marginBottom: '4px' }}>Target Username:</label>
+                            <input 
+                                type="text" 
+                                value={testUsername} 
+                                onChange={(e) => setTestUsername(e.target.value)}
+                                placeholder="Enter username"
+                                style={{ 
+                                    padding: '6px', 
+                                    width: '200px', 
+                                    borderRadius: '4px', 
+                                    border: '1px solid #ccc' 
+                                }}
+                            />
+                        </div>
+                    )}
+
                     <div style={{ marginBottom: '10px' }}>
                         <label style={{ fontSize: '0.85rem', display: 'block', marginBottom: '4px' }}>Custom Alert Message (Optional):</label>
                         <input 

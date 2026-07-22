@@ -499,14 +499,38 @@ const sendTestEmail = async (req, res) => {
 };
 
 const sendTestPush = async (req, res) => {
-  const { message } = req.body;
-  const { sendPushNotification } = require('../services/push.service');
+  const { message, target, username } = req.body;
+  const { sendPushNotification, sendPushNotificationToAll } = require('../services/push.service');
 
   try {
     const adminUser = await User.findById(req.user.id);
     const adminName = adminUser ? adminUser.username : 'Admin';
-    const testMessage = message || `Hello ${adminName}, this is a test push notification from your Booking App dashboard!`;
+    const testMessage = message || `Test push alert from admin dashboard!`;
 
+    const payload = {
+      title: 'Dashboard Admin Alert',
+      body: testMessage,
+      url: '/'
+    };
+
+    if (target === 'all') {
+      await sendPushNotificationToAll(payload);
+      return res.json({ msg: `Test push broadcast successfully sent to ALL registered devices!` });
+    }
+
+    if (target === 'user') {
+      if (!username) {
+        return res.status(400).json({ msg: 'Target username is required.' });
+      }
+      const targetUser = await User.findOne({ username: { $regex: new RegExp(`^${username}$`, 'i') } });
+      if (!targetUser) {
+        return res.status(404).json({ msg: `User "${username}" not found.` });
+      }
+      await sendPushNotification(targetUser._id, payload);
+      return res.json({ msg: `Test push successfully sent to registered devices of "${targetUser.username}"!` });
+    }
+
+    // Default: 'self'
     await sendPushNotification(req.user.id, {
       title: 'Dashboard Test Push',
       body: testMessage,

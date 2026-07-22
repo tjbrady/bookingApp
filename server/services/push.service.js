@@ -43,6 +43,36 @@ const sendPushNotification = async (userId, payload) => {
   }
 };
 
+/**
+ * Sends a push notification to ALL registered device subscriptions.
+ * @param {object} payload - Notification payload { title, body, url }
+ */
+const sendPushNotificationToAll = async (payload) => {
+  try {
+    const subscriptions = await PushSubscription.find({});
+    if (subscriptions.length === 0) return;
+
+    const notificationPayload = JSON.stringify(payload);
+
+    const sendPromises = subscriptions.map((sub) => {
+      return webpush.sendNotification(sub.subscription, notificationPayload)
+        .catch(async (err) => {
+          if (err.statusCode === 410 || err.statusCode === 404) {
+            console.log(`Removing expired push subscription: ${sub._id}`);
+            await PushSubscription.deleteOne({ _id: sub._id });
+          } else {
+            console.error(`Error sending push to subscription ${sub._id}:`, err.message);
+          }
+        });
+    });
+
+    await Promise.all(sendPromises);
+  } catch (err) {
+    console.error('Error sending push notification batch to all users:', err.message);
+  }
+};
+
 module.exports = {
   sendPushNotification,
+  sendPushNotificationToAll,
 };
