@@ -193,6 +193,86 @@ const EmailStatusChecker = () => {
     );
 };
 
+const PushNotificationStatusChecker = () => {
+    const [testLoading, setTestLoading] = useState(false);
+    const [testResult, setTestResult] = useState(null);
+    const [testMessage, setTestMessage] = useState('');
+
+    const handleSendTestPush = async () => {
+        setTestLoading(true);
+        setTestResult(null);
+        try {
+            const res = await api.post('/admin/test-push', { 
+                message: testMessage
+            });
+            setTestResult({ success: true, message: res.data.msg });
+        } catch (e) {
+            console.error("Test push failed", e);
+            setTestResult({ success: false, message: e.response?.data?.msg || 'Test push failed.' });
+        } finally {
+            setTestLoading(false);
+        }
+    };
+
+    return (
+        <section style={{ 
+            border: '1px solid #ccc', 
+            borderRadius: '4px', 
+            padding: '1rem', 
+            marginBottom: '1rem',
+            backgroundColor: '#f9f9f9'
+        }}>
+            <h3 style={{ marginTop: 0 }}>Push Notification System</h3>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '20px', flexWrap: 'wrap' }}>
+                <div>
+                    <p style={{ margin: '0 0 10px 0' }}>
+                        Use this utility to dispatch a test Web Push notification to all of <strong>your registered devices</strong>.
+                    </p>
+                    <p style={{ fontSize: '0.85rem', color: '#666', margin: '0 0 10px 0' }}>
+                        Make sure you have clicked <strong>🔔 Enable Push</strong> in the top navigation bar on the browser/device you want to test!
+                    </p>
+                </div>
+                <div style={{ textAlign: 'right', minWidth: '250px' }}>
+                    <div style={{ marginBottom: '10px' }}>
+                        <label style={{ fontSize: '0.85rem', display: 'block', marginBottom: '4px' }}>Custom Alert Message (Optional):</label>
+                        <input 
+                            type="text" 
+                            value={testMessage} 
+                            onChange={(e) => setTestMessage(e.target.value)}
+                            placeholder="Enter test message"
+                            style={{ 
+                                padding: '6px', 
+                                width: '200px', 
+                                borderRadius: '4px', 
+                                border: '1px solid #ccc' 
+                            }}
+                        />
+                    </div>
+                    <button 
+                        className="btn-admin btn-approve"
+                        onClick={handleSendTestPush} 
+                        disabled={testLoading}
+                    >
+                        {testLoading ? 'Dispatched...' : 'Send Test Push'}
+                    </button>
+                    {testResult && (
+                        <p style={{ 
+                            margin: '10px 0 0 0', 
+                            color: testResult.success ? 'green' : 'red',
+                            fontSize: '0.85rem',
+                            fontWeight: 'bold',
+                            maxWidth: '250px',
+                            wordBreak: 'break-word'
+                        }}>
+                            {testResult.message}
+                        </p>
+                    )}
+                </div>
+            </div>
+        </section>
+    );
+};
+
 
 const Accordion = ({ title, children, defaultOpen = false }) => {
     const [isOpen, setIsOpen] = useState(defaultOpen);
@@ -462,6 +542,10 @@ const AdminDashboard = () => {
 
       <Accordion title="Email System Status">
         <EmailStatusChecker />
+      </Accordion>
+
+      <Accordion title="Push Notification Status">
+        <PushNotificationStatusChecker />
       </Accordion>
 
       <Accordion title="Home Page Message">

@@ -1,6 +1,7 @@
 import React, { createContext, useReducer, useEffect } from 'react';
 import api from '../services/api';
 import { jwtDecode } from 'jwt-decode';
+import { registerServiceWorker } from '../utils/pushNotifications';
 
 // Initial State
 const initialState = {
@@ -59,6 +60,9 @@ export const AuthProvider = ({ children }) => {
 
   // Load user on mount
   useEffect(() => {
+    // Register background service worker
+    registerServiceWorker();
+
     const loadUser = () => {
       const token = localStorage.getItem('token');
       if (token) {

@@ -2,6 +2,7 @@ const User = require('../models/user.model');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const sendEmail = require('../services/email.service');
+const { sendPushNotification } = require('../services/push.service');
 
 const { getBaseTemplate } = require('../utils/emailTemplates');
 
@@ -28,6 +29,19 @@ const register = async (req, res) => {
     // Notify admins
     const admins = await User.find({ role: 'admin' });
     const adminEmails = admins.map(admin => admin.email);
+
+    // Send push notifications to admins
+    for (const admin of admins) {
+      try {
+        await sendPushNotification(admin._id, {
+          title: 'New User Registered',
+          body: `User "${username}" (${email}) is pending approval.`,
+          url: '/'
+        });
+      } catch (pushErr) {
+        console.error(`Failed to send registration push to admin ${admin._id}:`, pushErr.message);
+      }
+    }
 
     if (adminEmails.length > 0) {
       console.log('Sending registration notification to admins:', adminEmails);

@@ -4,6 +4,7 @@ const ColorSchedule = require('../models/colorSchedule.model');
 const User = require('../models/user.model');
 const Notification = require('../models/notification.model');
 const sendEmail = require('../services/email.service');
+const { sendPushNotification } = require('../services/push.service');
 const { formatDate } = require('../utils/dateUtils');
 const { getBaseTemplate } = require('../utils/emailTemplates');
 
@@ -146,9 +147,17 @@ const updateBooking = async (req, res) => {
             const user = await User.findById(booking.user._id);
 
             // In-app notification
+            const messageText = `Your booking request for ${dateFrom} - ${dateTo} has been ${status === 'denied' ? 'denied' : status}.`;
             await Notification.create({
                 user: booking.user._id,
-                message: `Your booking request for ${dateFrom} - ${dateTo} has been ${status === 'denied' ? 'denied' : status}.`
+                message: messageText
+            });
+
+            // Send Push Notification
+            await sendPushNotification(booking.user._id, {
+                title: 'Booking Status Update',
+                body: messageText,
+                url: '/bookings'
             });
 
             // Email notification
@@ -178,11 +187,17 @@ const updateBooking = async (req, res) => {
                 booking.status = 'cancellation_pending'; // User can request cancellation for confirmed
                 const dateFrom = formatDate(booking.dateFrom);
                 const dateTo = formatDate(booking.dateTo);
-                // Notify admin of cancellation request (optional, can be added later)
-                // For now, notify user about their request status
+                const cancelMsgText = `Your request to cancel booking ${dateFrom} - ${dateTo} has been submitted for admin review.`;
                 await Notification.create({
                     user: booking.user._id,
-                    message: `Your request to cancel booking ${dateFrom} - ${dateTo} has been submitted for admin review.`
+                    message: cancelMsgText
+                });
+
+                // Send Push Notification
+                await sendPushNotification(booking.user._id, {
+                    title: 'Cancellation Submitted',
+                    body: cancelMsgText,
+                    url: '/bookings'
                 });
             } else {
                 return res.status(403).json({ msg: 'Cannot cancel a booking with status: ' + originalStatus });

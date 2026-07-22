@@ -46,7 +46,7 @@ const Home = () => {
     <div>
       <h1 style={{textAlign: 'center', marginBottom: '1rem'}}>Welcome to the Apartment 4C Booking Portal - {user ? user.username : 'Guest'}</h1>
       <p style={{textAlign: 'center', maxWidth: '800px', margin: '0 auto 2rem auto', fontSize: '1.1em'}}>
-        Please see if you can create a user ID by registering using the menu on the top right. Then have a look at the options for requesting time, please have a good play with the system and give me your feedback.
+        Create a user ID by registering using the menu on the top right. Then use the My Bookings to make reservation requests.
       </p>
 
       {messageOfTheDay && (

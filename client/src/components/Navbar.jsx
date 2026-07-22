@@ -1,7 +1,8 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { ReportContext } from '../context/ReportContext';
+import PushNotificationToggle from './PushNotificationToggle';
 import './Navbar.css';
 
 const Navbar = () => {
@@ -39,6 +40,9 @@ const Navbar = () => {
           </ul>
         </li>
       )}
+      <li style={{ display: 'flex', alignItems: 'center', padding: '0 8px' }}>
+        <PushNotificationToggle />
+      </li>
       <li className="navbar-welcome">
         <em>Welcome, {user?.username}</em>
       </li>

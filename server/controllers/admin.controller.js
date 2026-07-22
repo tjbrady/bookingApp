@@ -498,6 +498,28 @@ const sendTestEmail = async (req, res) => {
   }
 };
 
+const sendTestPush = async (req, res) => {
+  const { message } = req.body;
+  const { sendPushNotification } = require('../services/push.service');
+
+  try {
+    const adminUser = await User.findById(req.user.id);
+    const adminName = adminUser ? adminUser.username : 'Admin';
+    const testMessage = message || `Hello ${adminName}, this is a test push notification from your Booking App dashboard!`;
+
+    await sendPushNotification(req.user.id, {
+      title: 'Dashboard Test Push',
+      body: testMessage,
+      url: '/'
+    });
+
+    res.json({ msg: `Test push notification successfully dispatched to your registered devices!` });
+  } catch (err) {
+    console.error('Error sending test push notification:', err.message);
+    res.status(500).json({ msg: 'Push notification error: ' + err.message });
+  }
+};
+
 module.exports = {
   getUsers,
   updateUser,
@@ -511,5 +533,6 @@ module.exports = {
   exportScheduleSummary,
   getEmailStatus,
   getProjectSummary,
-  sendTestEmail
-  };
+  sendTestEmail,
+  sendTestPush
+};

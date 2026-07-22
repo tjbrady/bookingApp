@@ -13,7 +13,8 @@ const {
   exportScheduleDetail,
   getEmailStatus,
   getProjectSummary,
-  sendTestEmail
+  sendTestEmail,
+  sendTestPush
 } = require('../controllers/admin.controller');
 const { getSchedule, setSchedule, saveScheduleByYear } = require('../controllers/schedule.controller');
 const { updateSetting } = require('../controllers/setting.controller');
@@ -33,6 +34,7 @@ router.get('/reports/schedule-detail', exportScheduleDetail);
 router.get('/email-status', getEmailStatus);
 router.get('/project-summary', getProjectSummary);
 router.post('/test-email', sendTestEmail);
+router.post('/test-push', sendTestPush);
 
 // ----- User Management Routes -----
 router.get('/users', getUsers);
