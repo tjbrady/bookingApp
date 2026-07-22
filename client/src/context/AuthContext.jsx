@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import React, { createContext, useReducer, useEffect } from 'react';
 import api from '../services/api';
 import { jwtDecode } from 'jwt-decode';
@@ -78,7 +79,7 @@ export const AuthProvider = ({ children }) => {
             dispatch({ type: USER_LOADED, payload: decoded.user });
           }
         }
-        catch (err) {
+        catch {
           dispatch({ type: AUTH_ERROR });
         }
       }

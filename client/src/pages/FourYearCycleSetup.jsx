@@ -6,7 +6,7 @@ import ScheduleSummaryTable from '../components/ScheduleSummaryTable'; // Import
 import { AuthContext } from '../context/AuthContext.jsx';
 
 // This function transforms the flat array from the API into the nested object structure
-const transformScheduleToStructured = (flatSchedule) => {
+const transformScheduleToStructured = (flatSchedule, configuredYearsList = []) => {
     const colors = ['Blue', 'Red', 'Orange', 'Yellow', 'Green'];
     const defaultEntry = { startDate: '', endDate: '' };
     const structured = {};
@@ -17,6 +17,15 @@ const transformScheduleToStructured = (flatSchedule) => {
         flatSchedule.forEach(entry => {
             const year = new Date(entry.startDate).getUTCFullYear();
             yearSet.add(year);
+        });
+    }
+
+    // Add explicitly configured years from settings
+    if (Array.isArray(configuredYearsList)) {
+        configuredYearsList.forEach(year => {
+            if (year && !isNaN(year)) {
+                yearSet.add(Number(year));
+            }
         });
     }
     
@@ -78,7 +87,18 @@ const FourYearCycleSetup = () => {
     setLoadingData(true);
     try {
       const scheduleRes = await api.get('/admin/schedule');
-      const structuredSchedule = transformScheduleToStructured(scheduleRes.data);
+      
+      let configuredYearsList = [];
+      try {
+        const yearsSettingRes = await api.get('/settings/configuredScheduleYears');
+        if (yearsSettingRes.data && yearsSettingRes.data.value) {
+          configuredYearsList = yearsSettingRes.data.value.split(',').map(Number).filter(Boolean);
+        }
+      } catch (settingsErr) {
+        console.warn('Failed to fetch configured schedule years setting, using defaults.', settingsErr);
+      }
+
+      const structuredSchedule = transformScheduleToStructured(scheduleRes.data, configuredYearsList);
       setSchedule(structuredSchedule);
     } catch (err) {
       setError('Failed to fetch schedule data.');
@@ -117,9 +137,22 @@ const FourYearCycleSetup = () => {
 
       // Call the new year-specific endpoint
       await api.post(`/admin/schedule/year/${yearToSave}`, flatScheduleForYear);
+
+      // Save the complete list of configured years currently visible in fullSchedule
+      const allYears = Object.keys(fullSchedule).map(Number).sort((a, b) => b - a);
+      try {
+        await api.post('/admin/settings', {
+          key: 'configuredScheduleYears',
+          value: allYears.join(',')
+        });
+      } catch (settingsSaveErr) {
+        console.error('Failed to save configured schedule years setting:', settingsSaveErr);
+      }
+
       alert(`Schedule for ${yearToSave} saved successfully!`);
       await fetchData(); // Refetch all data to ensure consistency
     } catch (err) {
+      console.error(`Failed to save schedule for ${yearToSave}:`, err);
       setError(`Failed to save schedule for ${yearToSave}.`);
     } finally {
       setLoadingData(false);

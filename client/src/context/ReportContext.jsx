@@ -1,6 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+/* eslint-disable react-refresh/only-export-components */
+import React, { createContext, useContext, useState } from 'react';
 import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
 import api from '../services/api';
 import { AuthContext } from './AuthContext';
 import { formatDate } from '../utils/dateUtils';

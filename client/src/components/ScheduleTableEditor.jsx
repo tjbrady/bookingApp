@@ -1,17 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 
 const colors = ['Blue', 'Red', 'Orange', 'Yellow', 'Green'];
 
 const ScheduleTableEditor = ({ schedule, setSchedule, onSave, loading }) => {
-  const [years, setYears] = useState([]);
-
-  useEffect(() => {
-    if (schedule && Object.keys(schedule).length > 0) {
-      // Extract existing years from the schedule object and sort descending
-      const existingYears = Object.keys(schedule).map(Number).sort((a, b) => b - a);
-      setYears(existingYears);
-    }
-  }, [schedule]);
+  const years = Object.keys(schedule || {}).map(Number).sort((a, b) => b - a);
 
   const handleAddYear = () => {
     const nextYear = years.length > 0 ? Math.max(...years) + 1 : new Date().getFullYear();
@@ -28,7 +20,6 @@ const ScheduleTableEditor = ({ schedule, setSchedule, onSave, loading }) => {
     });
     
     setSchedule(newSchedule);
-    setYears([nextYear, ...years]); // Add to the left
   };
 
   const handleDateChange = (year, color, index, field, value) => {
@@ -46,7 +37,7 @@ const ScheduleTableEditor = ({ schedule, setSchedule, onSave, loading }) => {
   return (
     <div style={{ marginTop: '2rem' }}>
       <div style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-        <p style={{ margin: 0 }}>Enter the start and end dates for each color-coded booking period. Each color has 3 available slots per year.</p>
+        <p style={{ margin: 0 }}>Enter the start and end dates for each colour-coded booking period. Each colour has 3 available slots per year.</p>
         <button 
           onClick={handleAddYear}
           style={{ 

@@ -27,7 +27,7 @@ const MessageOfTheDayManager = () => {
         try {
             await api.post('/admin/settings', { key: 'messageOfTheDay', value: message });
             setStatus('Saved successfully!');
-        } catch (e) {
+        } catch {
             setStatus('Failed to save.');
         }
         setTimeout(() => setStatus(''), 3000);
@@ -424,6 +424,7 @@ const AdminDashboard = () => {
       setBookings(bookings.map(b => b._id === id ? res.data : b));
       await fetchData(); // Refetch to ensure consistency
     } catch (err) {
+      console.error(err);
       setError(`Failed to update status for booking ${id}`);
     }
   };
@@ -434,6 +435,7 @@ const AdminDashboard = () => {
         await api.delete(`/bookings/${id}`);
         setBookings(bookings.filter(b => b._id !== id));
       } catch (err) {
+        console.error(err);
         setError(`Failed to delete booking ${id}`);
       }
     }
@@ -448,6 +450,7 @@ const AdminDashboard = () => {
           alert('All bookings have been deleted.');
           await fetchData(); // Refetch data to show empty lists
         } catch (err) {
+          console.error(err);
           setError('Failed to delete all bookings.');
         } finally {
           setLoadingData(false);
@@ -464,6 +467,7 @@ const AdminDashboard = () => {
         alert(`All bookings for ${year} have been deleted.`);
         await fetchData(); // Refetch data to show empty lists
       } catch (err) {
+        console.error(err);
         setError(`Failed to delete bookings for ${year}.`);
       } finally {
         setLoadingData(false);

@@ -22,7 +22,7 @@ const Bookings = () => {
   const [selection, setSelection] = useState({ start: null, end: null });
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState('');
-  const { isAuthenticated, user, loading: authLoading } = useContext(AuthContext);
+  const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
   const navigate = useNavigate();
 
   const currentYear = new Date().getFullYear();
@@ -55,7 +55,10 @@ const Bookings = () => {
       }
       setMyBookings(finalMyBookings);
 
-    } catch (err) { setError('Failed to load booking data.'); } 
+    } catch (err) {
+      console.error(err);
+      setError('Failed to load booking data.');
+    } 
     finally { setLoadingData(false); }
   };
 
@@ -173,7 +176,7 @@ const Bookings = () => {
 
     try {
       // Send UTC ISO strings (which backend should respect as dates)
-      const res = await api.post('/bookings', { 
+      await api.post('/bookings', { 
           service: 'Date Range Booking', 
           dateFrom: selection.start.toISOString(), // Send strict ISO string
           dateTo: selection.end.toISOString() 
