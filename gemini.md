@@ -20,7 +20,7 @@ The application is a full-stack booking system with advanced, role-based schedul
     *   **Admin User Management:** Admins can approve, reject, or revoke access for any user.
     *   **Color-Coded Scheduling:** Admins can define a 4-year schedule. The backend now supports both overwriting the entire schedule and updating it on a year-by-year basis.
     *   **Booking Workflow:** Users request bookings, which admins can approve, reject, or delete. Backend endpoints also exist to delete all bookings or bookings for a specific year.
-    *   **Notification System:** The backend automatically generates notifications for users when an admin acts on their booking requests.
+    *   **Notification System:** The backend automatically generates notifications for users when an admin acts on their booking requests, and integrates a native Web Push framework (`web-push`) to deliver free, real-time background push alerts.
     *   **Site Settings:** An endpoint for admins to save and retrieve site-wide settings, such as a message of the day.
 *   **How to Run:**
     1.  Navigate to the `/server` directory.
@@ -33,8 +33,9 @@ The application is a full-stack booking system with advanced, role-based schedul
 *   **State Management:** React Context (`AuthContext`).
 *   **Features:**
     *   **Split Admin Dashboard:** Admin tasks are now split into two pages for clarity:
-        *   **Admin Dashboard (`/admin`):** For frequent tasks like booking management, user management, and updating the Message of the Day.
+        *   **Admin Dashboard (`/admin`):** For frequent tasks like booking management, user management, updating the Message of the Day, and testing Web Push alerts (allowing targeting of yourself, specific users by case-insensitive username, or broadcasting globally).
         *   **4 Year Cycle Setup (`/admin/cycle-setup`):** For the rare task of setting up the 4-year color schedule.
+    *   **Navbar Push Notifications Toggle:** Integrated a quick subscription enable/disable button (`🔔 Enable Push` / `🔕 Disable Push`) inside the header that registers the Service Worker and syncs keys with MongoDB.
     *   **New Schedule Editor:** The previous "paint-the-weeks" calendar has been replaced by a form-based table editor (`ScheduleTableEditor`), allowing direct entry of start/end dates for 3 booking slots per color, per year.
     *   **Schedule Summary Table:** A summary table on the "4 Year Cycle Setup" page provides an at-a-glance overview of the total weeks allocated for each colour per year.
     *   **Granular Saving & Deletion:** The UI now supports saving the schedule on a per-year basis and includes (non-functional) buttons for clearing booking data by year or all at once.

@@ -14,6 +14,7 @@ The application is built using the **MERN** stack and hosted on **Render** for h
 *   **Backend:** Node.js & Express hosted on `bookingApp`.
 *   **Database:** MongoDB Atlas (NoSQL) for flexible data storage.
 *   **Notifications:** Gmail API (Production Status) for reliable automated email communication.
+*   **Push Notifications:** Native Web Push API (`web-push` npm) and browser Service Workers for free real-time background device alerts.
 *   **Source Control:** GitHub (`tjbrady/bookingApp`) with PAT-based synchronization.
 
 ## 3. Core Business Logic (The 4-Year Cycle)
@@ -29,6 +30,12 @@ The heart of the application is the rotating occupancy schedule, which follows a
 *   **UI/UX Refinements:** Ongoing polish of the mobile experience and schedule editor responsiveness.
 
 ## 5. Evolution Log (Chronological)
+
+### 22Jul26
+*   **Web Push Notifications:** Designed and implemented a native Web Push framework using the `web-push` Node library and standard browser Service Workers. Subscriptions are securely persisted in MongoDB per device, supporting multi-device push delivery for each user.
+*   **Alert Triggers:** Configured real-time push dispatches in parallel with database notifications: booking status changes (approvals, denials, cancellation requests) trigger instant owner alerts, and user registrations trigger instant alerts to all active administrators.
+*   **Admin Tools:** Integrated a complete "Push Notification Status" accordion into the Admin Dashboard, enabling administrators to test notifications with custom messages and target audience filters (*Myself (Admin)*, *All Subscribed Users*, or a *Specific User* with case-insensitive backend username lookup).
+*   **UX:** Updated homepage welcome messaging to offer concise, clear actions: "Create a user ID by registering using the menu on the top right. Then use the My Bookings to make reservation requests."
 
 ### 21Jul26
 *   **Admin:** Refactored the `FourYearCycleSetup` page to support infinite dynamic years. The hardcoded year arrays were removed in favor of a system that auto-discovers years from the database.
