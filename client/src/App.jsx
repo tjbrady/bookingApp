@@ -14,7 +14,10 @@ function App() {
         <div className="header-navbar">
           <Navbar />
         </div>
-        <h1 className="banner-text">Apartment 4C QSR Booking Portal</h1> {/* New heading */}
+        <h1 className="banner-text">
+          <span className="desktop-title">Apartment 4C QSR Booking Portal</span>
+          <span className="mobile-title">4C QSR Booking</span>
+        </h1> {/* New heading */}
       </header>
       
       <main className="main-content">

@@ -43,10 +43,8 @@ const Navbar = () => {
       <li style={{ display: 'flex', alignItems: 'center', padding: '0 8px' }}>
         <PushNotificationToggle />
       </li>
-      <li className="navbar-welcome">
-        <em>Welcome, {user?.username}</em>
-      </li>
-      <li>
+      <li className="navbar-user-block">
+        <span className="navbar-welcome">Welcome, {user?.username}</span>
         <a href="#!" onClick={handleLogout} className="navbar-logout">
           Logout
         </a>

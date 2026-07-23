@@ -44,3 +44,27 @@
 .main-content {
   padding-top: 5rem; /* Adjust this value based on the actual height of your fixed header */
 }
+
+/* Responsive Title & Video Crop for Mobile */
+.banner-text .mobile-title {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .banner-text .desktop-title {
+    display: none !important;
+  }
+  .banner-text .mobile-title {
+    display: inline !important;
+  }
+  .banner-text {
+    font-size: 2.1em !important; /* Elegant, compact title text on portrait */
+    width: 90% !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-video {
+    object-position: center top !important; /* Force video to crop bottom instead of top, keeping sky/palms in frame */
+  }
+}
