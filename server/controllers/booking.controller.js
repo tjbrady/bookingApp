@@ -169,7 +169,7 @@ const updateBooking = async (req, res) => {
                     `<p>Hello <strong>${user.username}</strong>,</p>
                      <p>Your booking request for the period <strong>${dateFrom}</strong> to <strong>${dateTo}</strong> has been <strong>${status === 'confirmed' ? 'approved' : (status === 'denied' ? 'denied' : 'cancelled')}</strong>.</p>`,
                     'https://bookingapp-static.onrender.com/bookings',
-                    'View My Bookings'
+                    'View Bookings'
                 );
                 try {
                     await sendEmail(user.email, subject, text, html);

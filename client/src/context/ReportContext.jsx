@@ -77,7 +77,7 @@ export const ReportProvider = ({ children }) => {
           const reportTitle = `Booking Report - ${formatDate(new Date())}`;
           const reportFileName = `booking_report_${new Date().toISOString().substring(0, 10)}.pdf`;
           let html = `<h1>${reportTitle}</h1>`;
-          html += `<h2>My Bookings (${user?.username || 'Guest'})</h2>`;
+          html += `<h2>Bookings Report (${user?.username || 'Guest'})</h2>`;
           if (myBookingsRes.data.length === 0) {
               html += '<p>No personal booking requests.</p>';
           } else {

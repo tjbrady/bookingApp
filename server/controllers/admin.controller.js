@@ -461,7 +461,7 @@ const sendTestEmail = async (req, res) => {
           'Booking Approved',
           '<p>Hello, your booking request for the period <strong>2026-05-01</strong> to <strong>2026-05-07</strong> has been <strong>approved</strong>.</p>',
           'https://bookingapp-static.onrender.com/bookings',
-          'View My Bookings'
+          'View Bookings'
         );
         break;
       case 'booking_rejected':
@@ -471,7 +471,7 @@ const sendTestEmail = async (req, res) => {
           'Booking Rejected',
           '<p>Hello, your booking request for the period <strong>2026-05-01</strong> to <strong>2026-05-07</strong> has been <strong>rejected or cancelled</strong>.</p>',
           'https://bookingapp-static.onrender.com/bookings',
-          'View My Bookings'
+          'View Bookings'
         );
         break;
       default:

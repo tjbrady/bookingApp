@@ -25,7 +25,7 @@ const Navbar = () => {
   const authLinks = (
     <>
       <li className="navbar-dropdown-parent">
-        <Link to="/bookings">My Bookings</Link>
+        <Link to="/bookings">Bookings</Link>
         <ul className="navbar-dropdown">
           <li><button onClick={handlePrintUserReportClick} disabled={reportLoading}>
               {reportLoading ? 'Generating...' : 'Print Report'}

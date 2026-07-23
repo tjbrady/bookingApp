@@ -99,7 +99,7 @@ const getBaseTemplate = (title, content, actionLink = null, actionText = null) =
           <p>© ${new Date().getFullYear()} Quinta de São Roque</p>
           <div class="footer-links">
             <a href="https://bookingapp-static.onrender.com">Home</a> | 
-            <a href="https://bookingapp-static.onrender.com/bookings">My Bookings</a>
+            <a href="https://bookingapp-static.onrender.com/bookings">Bookings</a>
           </div>
         </div>
       </div>
