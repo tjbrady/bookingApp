@@ -2,9 +2,10 @@
   display: flex;
   align-items: center;
   list-style: none;
-  padding: 0;
+  padding: 0 1.5rem; /* Added side padding for margins */
   margin: 0;
   width: 100%;
+  box-sizing: border-box; /* Ensures padding does not break layout */
 }
 
 .navbar-list li {
@@ -96,5 +97,61 @@
   padding: 0.5rem 0; /* Adjust padding to match links if needed */
   cursor: default; /* Retain default cursor */
   text-decoration: none; /* No underline */
+}
+
+/* Mobile responsive enhancements for navigation bar */
+@media (max-width: 768px) {
+  .navbar-list {
+    padding: 0 0.75rem; /* Margins/padding closer to edge on mobile */
+  }
+
+  .navbar-list li {
+    margin-right: 0.6rem; /* Less space between items to avoid crowding */
+  }
+
+  .navbar-list a,
+  .navbar-dropdown-parent > span {
+    font-size: 0.9rem; /* Smaller, elegant font size */
+  }
+
+  .navbar-welcome {
+    display: none !important; /* Hide welcome text on small screens to save valuable layout space */
+  }
+}
+
+/* Push Notification Navbar Toggle Flat Text-Link Styles */
+.navbar-push-toggle {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  transition: color 0.2s ease, opacity 0.2s ease;
+}
+
+.navbar-push-toggle.unsubscribed {
+  color: #ffffff;
+}
+
+.navbar-push-toggle.subscribed {
+  color: #ffcccc; /* Elegant, soft rose-grey to indicate active subscription */
+}
+
+.navbar-push-toggle:hover {
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+@media (max-width: 768px) {
+  .navbar-push-toggle {
+    font-size: 0.9rem; /* Responsive sizing matching surrounding items on mobile */
+  }
 }
 

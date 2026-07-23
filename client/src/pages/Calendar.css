@@ -228,4 +228,23 @@
     margin-left: 0 !important; /* Remove desktop spacing */
     padding: 8px;
   }
+
+  /* Subtle, elegant scaling down of calendar grid cells on mobile */
+  .day-cell {
+    min-height: 34px !important;
+    padding: 3px !important;
+    font-size: 0.8em !important;
+  }
+
+  .day-header {
+    font-size: 0.7em !important;
+    padding: 2px !important;
+  }
+
+  /* Scale the corner color status triangles proportionally */
+  .day-cell.confirmed::after,
+  .day-cell.pending::after,
+  .day-cell.cancellation_pending::after {
+    border-width: 0 10px 10px 0 !important;
+  }
 }

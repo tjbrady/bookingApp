@@ -44,7 +44,7 @@ const Home = () => {
 
   return (
     <div>
-      <h1 style={{textAlign: 'center', marginBottom: '1rem'}}>Welcome to the Apartment 4C Booking Portal - {user ? user.username : 'Guest'}</h1>
+      <h1 style={{textAlign: 'center', marginBottom: '1rem'}}>4C Booking - {user ? user.username : 'Guest'}</h1>
       <p style={{textAlign: 'center', maxWidth: '800px', margin: '0 auto 2rem auto', fontSize: '1.1em'}}>
         Create a user ID by registering using the menu on the top right. Then use the My Bookings to make reservation requests.
       </p>

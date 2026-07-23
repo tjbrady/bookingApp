@@ -51,21 +51,7 @@ const PushNotificationToggle = () => {
       <button
         onClick={handleToggle}
         disabled={loading}
-        style={{
-          backgroundColor: subscribed ? '#ffe6e6' : '#e6f2ff',
-          color: subscribed ? '#c0392b' : '#2980b9',
-          border: '1px solid',
-          borderColor: subscribed ? '#f5b7b1' : '#a9cce3',
-          borderRadius: '4px',
-          padding: '5px 10px',
-          cursor: 'pointer',
-          fontSize: '0.85rem',
-          fontWeight: 'bold',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '5px',
-          transition: 'all 0.2s ease',
-        }}
+        className={`navbar-push-toggle ${subscribed ? 'subscribed' : 'unsubscribed'}`}
         title={subscribed ? 'Disable notifications on this device' : 'Enable notifications on this device'}
       >
         <span>{subscribed ? '🔕 Disable Push' : '🔔 Enable Push'}</span>
