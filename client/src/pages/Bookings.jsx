@@ -298,9 +298,14 @@ const Bookings = () => {
       <div>
         <div className="bookings-sticky-header">
           {/* ... existing header code ... */}
-          <div style={{ display: 'flex', gap: '2rem', alignItems: 'baseline', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <div className="header-title-column" style={{ flex: '1 1 200px', minWidth: '200px' }}>
-              <h2 style={{ margin: 0, padding: 0, lineHeight: 1.2 }}>Booking Calendar & My Requests</h2>
+              <div className="bookings-request-notice">
+                <span className="notice-icon">💡</span>
+                <span className="notice-text">
+                  <strong>Bookable Weeks:</strong> Only Blue, Orange, and Yellow weeks are available for reservation requests.
+                </span>
+              </div>
             </div>
             <div className="header-bookings-list-column" style={{ flex: '2 1 400px', minWidth: '300px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0' }}>
