@@ -54,7 +54,11 @@ const PushNotificationToggle = () => {
         className={`navbar-push-toggle ${subscribed ? 'subscribed' : 'unsubscribed'}`}
         title={subscribed ? 'Disable notifications on this device' : 'Enable notifications on this device'}
       >
-        <span>{subscribed ? '🔕 Disable Push' : '🔔 Enable Push'}</span>
+        <span>
+          {subscribed ? '🔕' : '🔔'}{' '}
+          <span className="hide-mobile-word">{subscribed ? 'Disable' : 'Enable'}</span>{' '}
+          Push
+        </span>
       </button>
     </div>
   );

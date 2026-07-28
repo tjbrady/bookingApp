@@ -168,3 +168,32 @@
   }
 }
 
+/* Portrait Mobile Phone (< 480px) Nano-Sizing to guarantee single-row menu */
+@media (max-width: 480px) {
+  .navbar-list {
+    padding: 0 0.4rem !important; /* Tighter margins on narrowest screens */
+  }
+
+  .navbar-list li {
+    margin-right: 0.4rem !important; /* Prevent items from wrapping on mobile portrait */
+  }
+
+  .navbar-list a,
+  .navbar-dropdown-parent > span,
+  .navbar-push-toggle {
+    font-size: 0.8rem !important; /* Compact, elegant font size for portrait */
+  }
+
+  .navbar-welcome {
+    font-size: 0.65rem !important; /* Mini subtitle font size */
+  }
+
+  .navbar-logout {
+    font-size: 0.75rem !important;
+  }
+
+  .hide-mobile-word {
+    display: none !important; /* Hides 'Enable/Disable' from push label, yielding '🔔 Push' */
+  }
+}
+

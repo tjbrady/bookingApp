@@ -211,7 +211,7 @@
   /* Reduce padding and sticky offset */
   .bookings-sticky-header {
     padding: 0.3rem 0.6rem; /* Ultra-slim mobile padding */
-    top: 62px; /* Set directly flush below mobile stacked navbar */
+    top: 48px; /* Set directly flush below single-row mobile stacked navbar */
     margin-top: -1rem; /* Less negative margin needed on mobile often */
   }
 
