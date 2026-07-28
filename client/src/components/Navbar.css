@@ -15,6 +15,7 @@
 .navbar-list a {
   text-decoration: none;
   color: #ffffff; /* Light color for contrast */
+  font-family: 'Josefin Sans', sans-serif !important;
   font-weight: 500;
 }
 
@@ -33,6 +34,7 @@
 }
 
 .navbar-welcome {
+  font-family: 'Josefin Sans', sans-serif !important;
   font-size: 0.85rem;
   color: #cccccc; /* Soft, readable light grey */
   font-weight: 400;
@@ -78,6 +80,7 @@
 
 .navbar-dropdown a,
 .navbar-dropdown button {
+  font-family: 'Josefin Sans', sans-serif !important;
   display: block;
   padding: 12px 20px; /* Increase padding for better mobile touch targets */
   color: #333333; /* Dark text for contrast against white background */
@@ -100,6 +103,7 @@
 /* Ensure span in navbar-dropdown-parent is visible and styled like a link */
 .navbar-dropdown-parent > span {
   color: #ffffff; /* Explicitly set to white */
+  font-family: 'Josefin Sans', sans-serif !important;
   font-weight: 500; /* Match link style */
   display: block; /* Make it block-level like links for consistent padding/sizing */
   padding: 0.5rem 0; /* Adjust padding to match links if needed */
