@@ -303,7 +303,8 @@ const Bookings = () => {
               <div className="bookings-request-notice">
                 <span className="notice-icon">💡</span>
                 <span className="notice-text">
-                  <strong>Bookable Weeks:</strong> Only Blue, Orange, and Yellow weeks are available for reservation requests.
+                  <strong>Blue, Orange & Yellow - ONLY!</strong><br />
+                  Bookings are for nights. (e.g. Fri - Sun means you leave Monday morning)
                 </span>
               </div>
             </div>
