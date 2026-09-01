@@ -194,6 +194,7 @@ const deleteUser = async (req, res) => {
     try {
       const bookings = await Booking.find()
         .populate('user', 'username email')
+        .populate('editHistory.editedBy', 'username')
         .sort({ createdAt: -1 });
       res.json(bookings);
     } catch (err) {

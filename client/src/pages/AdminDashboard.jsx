@@ -352,6 +352,57 @@ const AdminDashboard = () => {
   const { isAuthenticated, loading, user } = useContext(AuthContext);
   const navigate = useNavigate();
 
+  // Audit history and date edit states
+  const [editingBooking, setEditingBooking] = useState(null);
+  const [editDateFrom, setEditDateFrom] = useState('');
+  const [editDateTo, setEditDateTo] = useState('');
+  const [editReason, setEditReason] = useState('');
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [editModalError, setEditModalError] = useState('');
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
+  const [toggledHistory, setToggledHistory] = useState({});
+
+  const handleToggleHistory = (id) => {
+    setToggledHistory(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleOpenEditDatesModal = (booking) => {
+    setEditingBooking(booking);
+    // Format dates to YYYY-MM-DD for the input type="date"
+    const fromStr = new Date(booking.dateFrom).toISOString().split('T')[0];
+    const toStr = new Date(booking.dateTo).toISOString().split('T')[0];
+    setEditDateFrom(fromStr);
+    setEditDateTo(toStr);
+    setEditReason('');
+    setEditModalError('');
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveAdjustedDates = async (e) => {
+    e.preventDefault();
+    if (!editReason.trim()) {
+      setEditModalError('A reason for adjustment is required.');
+      return;
+    }
+    setIsSavingEdit(true);
+    setEditModalError('');
+    try {
+      await api.patch(`/bookings/${editingBooking._id}/admin-adjust`, {
+        dateFrom: editDateFrom,
+        dateTo: editDateTo,
+        reason: editReason
+      });
+      setIsEditModalOpen(false);
+      setEditingBooking(null);
+      await fetchData(); // Refresh list
+    } catch (err) {
+      const errorMsg = err.response?.data?.msg || 'Failed to adjust booking dates.';
+      setEditModalError(errorMsg);
+    } finally {
+      setIsSavingEdit(false);
+    }
+  };
+
   const fetchSummary = async () => {
     setLoadingSummary(true);
     try {
@@ -698,19 +749,46 @@ const AdminDashboard = () => {
                 {filteredBookings.map(b => (
                     <tr key={b._id} style={{ opacity: (b.status === 'cancelled' || b.status === 'denied') ? 0.6 : 1 }}>
                     <td>{b.user?.username || 'N/A'}</td>
-                    <td>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</td>
+                    <td>
+                      <div>{formatDate(b.dateFrom)} - {formatDate(b.dateTo)}</div>
+                      {b.editHistory && b.editHistory.length > 0 && (
+                        <div style={{ fontSize: '11px', color: '#666', marginTop: '4px' }}>
+                          <span style={{ cursor: 'pointer', textDecoration: 'underline', color: '#0066cc' }} onClick={() => handleToggleHistory(b._id)}>
+                            {toggledHistory[b._id] ? 'Hide History' : `📜 Show History (${b.editHistory.length})`}
+                          </span>
+                        </div>
+                      )}
+                      {b.editHistory && b.editHistory.length > 0 && toggledHistory[b._id] && (
+                        <div style={{ background: '#f5f5f5', borderLeft: '3px solid #ff9800', padding: '6px', marginTop: '6px', borderRadius: '4px', textAlign: 'left', fontSize: '11px', maxWidth: '280px' }}>
+                          <strong>Edit History:</strong>
+                          {b.editHistory.map((h, i) => (
+                            <div key={i} style={{ borderBottom: i < b.editHistory.length - 1 ? '1px dashed #ddd' : 'none', paddingBottom: '4px', paddingTop: '4px' }}>
+                              <div>✏️ <strong>{h.editedBy?.username || 'Admin'}</strong> on {formatDate(h.editedAt)}</div>
+                              <div><strong>Was:</strong> {formatDate(h.previousDateFrom)} - {formatDate(h.previousDateTo)}</div>
+                              <div><strong>Reason:</strong> <em>"{h.reason}"</em></div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </td>
                     <td>{b.colours?.join(', ') || 'N/A'}</td>
                     <td style={{ textTransform: 'capitalize' }}>{b.status === 'cancelled' ? 'cancelled (user)' : b.status}</td>
                     <td>
                         <div className="action-group">
                             {b.status === 'confirmed' && (
-                                <button className="btn-admin btn-decline" onClick={() => handleUpdateBookingStatus(b._id, 'denied')}>Decline</button>
+                                <>
+                                    <button className="btn-admin btn-neutral" onClick={() => handleOpenEditDatesModal(b)} style={{ marginRight: '5px' }}>Edit Dates</button>
+                                    <button className="btn-admin btn-decline" onClick={() => handleUpdateBookingStatus(b._id, 'denied')}>Decline</button>
+                                </>
                             )}
                             {(b.status === 'denied' || b.status === 'cancelled' || b.status === 'pending') && (
                                 <button className="btn-admin btn-approve" onClick={() => handleUpdateBookingStatus(b._id, 'confirmed')}>Approve</button>
                             )}
                             {b.status === 'pending' && (
-                                <button className="btn-admin btn-decline" onClick={() => handleUpdateBookingStatus(b._id, 'denied')}>Decline</button>
+                                <>
+                                    <button className="btn-admin btn-neutral" onClick={() => handleOpenEditDatesModal(b)} style={{ marginRight: '5px' }}>Edit Dates</button>
+                                    <button className="btn-admin btn-decline" onClick={() => handleUpdateBookingStatus(b._id, 'denied')}>Decline</button>
+                                </>
                             )}
                             <button className="btn-admin btn-remove" onClick={() => handleDeleteBooking(b._id)}>Remove</button>
                         </div>
@@ -778,6 +856,69 @@ const AdminDashboard = () => {
               <div style={{ marginTop: '30px', textAlign: 'center' }}>
                   <button className="btn-admin btn-neutral" onClick={() => setShowSummary(false)}>Close Summary</button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {isEditModalOpen && editingBooking && (
+        <div className="summary-modal-overlay" onClick={() => setIsEditModalOpen(false)}>
+          <div className="summary-modal-content" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '450px' }}>
+            <div className="summary-modal-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0 }}>Adjust Booking Dates</h3>
+              <button className="summary-modal-close" onClick={() => setIsEditModalOpen(false)}>&times;</button>
+            </div>
+            <div style={{ padding: '20px' }}>
+              <p style={{ margin: '0 0 15px 0', fontSize: '13px', color: '#666' }}>
+                Adjusting booking for <strong>{editingBooking.user?.username || 'N/A'}</strong>. The owner will be notified of this change immediately via email and push notification.
+              </p>
+              
+              {editModalError && (
+                <div style={{ color: 'red', background: '#ffe6e6', padding: '10px', borderRadius: '4px', marginBottom: '15px', fontSize: '13px' }}>
+                  {editModalError}
+                </div>
+              )}
+
+              <form onSubmit={handleSaveAdjustedDates}>
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', fontSize: '13px' }}>Start Date</label>
+                  <input 
+                    type="date" 
+                    value={editDateFrom} 
+                    onChange={(e) => setEditDateFrom(e.target.value)} 
+                    required
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', fontSize: '13px' }}>End Date</label>
+                  <input 
+                    type="date" 
+                    value={editDateTo} 
+                    onChange={(e) => setEditDateTo(e.target.value)} 
+                    required
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div style={{ marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontWeight: 'bold', marginBottom: '5px', fontSize: '13px' }}>Reason for Adjustment</label>
+                  <textarea 
+                    value={editReason} 
+                    onChange={(e) => setEditReason(e.target.value)} 
+                    placeholder="Provide a reason (e.g., Typo correction, scheduled shift)"
+                    required
+                    rows="3"
+                    style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px', boxSizing: 'border-box', fontFamily: 'inherit' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button type="button" className="btn-admin btn-neutral" onClick={() => setIsEditModalOpen(false)}>Cancel</button>
+                  <button type="submit" className="btn-admin btn-approve" disabled={isSavingEdit}>
+                    {isSavingEdit ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

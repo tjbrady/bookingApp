@@ -325,15 +325,36 @@ const Bookings = () => {
               {myBookings.length === 0 ? <p style={{marginTop: '0'}}>You have no booking requests.</p> : (
                 <ul style={{marginBottom: '1rem', marginTop: '0', listStyle: 'none', padding: 0}}>
                   {myBookings.map((booking) => (
-                    <li key={booking._id} style={{ display: 'flex', alignItems: 'center', marginBottom: '5px' }}>
-                      Night of {formatDate(booking.dateFrom)} to Night of {formatDate(booking.dateTo)} - <strong>[{booking.colours?.join(', ')}]</strong> - <strong>{booking.status}</strong>
-                      {(booking.status === 'pending' || booking.status === 'confirmed') && (
-                          <button onClick={() => handleCancelBooking(booking._id, booking.status)} style={{ marginLeft: '10px', padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px' }}>
-                              {booking.status === 'pending' ? 'Cancel' : 'Request Cancellation'}
-                          </button>
-                      )}
-                      {booking.status === 'cancellation_pending' && (
-                          <span style={{ marginLeft: '10px', color: '#ffc107' }}>Awaiting Admin Review</span>
+                    <li key={booking._id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '10px', padding: '10px', background: '#fcfcfc', border: '1px solid #eef', borderRadius: '6px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '5px' }}>
+                        <span>Night of {formatDate(booking.dateFrom)} to Night of {formatDate(booking.dateTo)} - <strong>[{booking.colours?.join(', ')}]</strong> - <strong style={{ textTransform: 'capitalize' }}>{booking.status}</strong></span>
+                        {(booking.status === 'pending' || booking.status === 'confirmed') && (
+                            <button onClick={() => handleCancelBooking(booking._id, booking.status)} style={{ marginLeft: 'auto', padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
+                                {booking.status === 'pending' ? 'Cancel' : 'Request Cancellation'}
+                            </button>
+                        )}
+                        {booking.status === 'cancellation_pending' && (
+                            <span style={{ marginLeft: 'auto', color: '#ffc107', fontWeight: 'bold' }}>Awaiting Admin Review</span>
+                        )}
+                      </div>
+                      
+                      {booking.editHistory && booking.editHistory.length > 0 && (
+                        <div style={{ background: '#fff9f0', borderLeft: '3px solid #ff9800', padding: '8px', marginTop: '8px', borderRadius: '4px', fontSize: '0.85em', width: '100%', boxSizing: 'border-box' }}>
+                          <strong style={{ color: '#d97706' }}>✏️ Booking Adjustment History:</strong>
+                          <ul style={{ paddingLeft: '15px', margin: '4px 0 0 0' }}>
+                            {booking.editHistory.map((h, i) => (
+                              <li key={i} style={{ margin: '4px 0', listStyleType: 'disc' }}>
+                                Adjusted by <strong>{h.editedBy?.username || 'Admin'}</strong> on {formatDate(h.editedAt)}:
+                                <div style={{ color: '#555', marginTop: '2px' }}>
+                                  <strong>Previous Dates:</strong> {formatDate(h.previousDateFrom)} to {formatDate(h.previousDateTo)}
+                                </div>
+                                <div style={{ color: '#555' }}>
+                                  <strong>Reason:</strong> <em>"{h.reason}"</em>
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       )}
                     </li>
                   ))}

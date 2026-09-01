@@ -6,6 +6,7 @@ const {
   createBooking,
   updateBooking,
   deleteBooking,
+  adjustBookingDates,
 } = require('../controllers/booking.controller');
 const auth = require('../middleware/auth.middleware');
 
@@ -16,6 +17,7 @@ router.get('/public', getPublicBookings);
 router.get('/', auth, getMyBookings);
 router.post('/', auth, createBooking);
 router.put('/:id', auth, updateBooking);
+router.patch('/:id/admin-adjust', auth, adjustBookingDates);
 router.delete('/:id', auth, deleteBooking);
 
 module.exports = router;
