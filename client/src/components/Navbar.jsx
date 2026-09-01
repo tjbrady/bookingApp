@@ -32,7 +32,7 @@ const Navbar = () => {
           </button></li>
         </ul>
       </li>
-      {user?.role === 'admin' && (
+      {(user?.role === 'admin' || user?.role === 'SU') && (
         <li className="navbar-dropdown-parent">
           <Link to="/admin">Admin</Link>
           <ul className="navbar-dropdown">

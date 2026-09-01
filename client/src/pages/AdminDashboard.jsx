@@ -503,7 +503,11 @@ const AdminDashboard = () => {
         return <span style={{ color: '#666', fontStyle: 'italic' }} title="You cannot modify your own account">Current User</span>;
     }
 
-    // 2. Protect the specific Super Admin email
+    // 2. Protect SU accounts from being modified or deleted by non-SUs, and protect the specific Super Admin email
+    if (u.role === 'SU' && user?.role !== 'SU') {
+        return <span style={{ color: 'purple', fontWeight: 'bold' }} title="Protected Super User Account">Super User</span>;
+    }
+
     if (u.email === 'bradytj@gmail.com') {
         return <span style={{ color: 'purple', fontWeight: 'bold' }} title="Protected Super Admin Account">Super Admin</span>;
     }
@@ -742,9 +746,11 @@ const AdminDashboard = () => {
                             value={u.role} 
                             onChange={(e) => handleUpdateUser(u._id, 'role', e.target.value)}
                             style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
+                            disabled={u.role === 'SU' && user?.role !== 'SU'}
                         >
                             <option value="user">user</option>
                             <option value="admin">admin</option>
+                            <option value="SU">SU</option>
                         </select>
                     </td>
                     <td>

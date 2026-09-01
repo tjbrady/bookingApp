@@ -12,15 +12,15 @@ const checkAdmins = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB');
 
-    const admins = await User.find({ role: 'admin' });
-    console.log(`Found ${admins.length} admin(s).`);
+    const admins = await User.find({ role: { $in: ['admin', 'SU'] } });
+    console.log(`Found ${admins.length} administrative user(s) (admin/SU).`);
     admins.forEach(admin => {
-        console.log(`- Username: ${admin.username}, Email: ${admin.email}`);
+        console.log(`- Username: ${admin.username}, Email: ${admin.email}, Role: ${admin.role}`);
     });
 
     if (admins.length === 0) {
-        console.log('WARNING: No admins found in the database with role: "admin".');
-        console.log('Emails will NOT be sent until at least one user is assigned the "admin" role.');
+        console.log('WARNING: No admins or SUs found in the database with administrative privileges.');
+        console.log('Emails will NOT be sent until at least one user is assigned the "admin" or "SU" role.');
         const allUsers = await User.find({});
         if (allUsers.length > 0) {
             console.log(`Total users in DB: ${allUsers.length}. Consider changing a user's role to "admin".`);

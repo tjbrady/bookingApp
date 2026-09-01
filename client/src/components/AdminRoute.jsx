@@ -9,7 +9,7 @@ const AdminRoute = () => {
     return <p>Loading...</p>; // Or a spinner component
   }
 
-  if (!isAuthenticated || user?.role !== 'admin') {
+  if (!isAuthenticated || (user?.role !== 'admin' && user?.role !== 'SU')) {
     return <Navigate to="/login" replace />;
   }
 

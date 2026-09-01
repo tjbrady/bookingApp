@@ -51,12 +51,9 @@ const updateUser = async (req, res) => {
 
 
 
-    // Protect the Super Admin account
-
-    if (user.email === 'bradytj@gmail.com') {
-
-        return res.status(403).json({ msg: 'Action Forbidden: This Super Admin account cannot be modified.' });
-
+    // Protect SU accounts from modification by non-SUs, and ensure the specific Super Admin email is protected
+    if ((user.role === 'SU' && req.user.role !== 'SU') || user.email === 'bradytj@gmail.com') {
+        return res.status(403).json({ msg: 'Action Forbidden: Super User accounts cannot be modified by non-SUs.' });
     }
 
 
@@ -95,17 +92,11 @@ const updateUser = async (req, res) => {
 
 
     // Update role if provided and valid
-
     if (role) {
-
-      if (!['user', 'admin'].includes(role)) {
-
+      if (!['user', 'admin', 'SU'].includes(role)) {
         return res.status(400).json({ msg: 'Invalid role provided.' });
-
       }
-
       user.role = role;
-
     }
 
 
@@ -164,12 +155,9 @@ const deleteUser = async (req, res) => {
 
 
 
-    // Protect the Super Admin account
-
-    if (user.email === 'bradytj@gmail.com') {
-
-        return res.status(403).json({ msg: 'Action Forbidden: This Super Admin account cannot be deleted.' });
-
+    // Protect SU accounts from deletion by non-SUs, and ensure the specific Super Admin email is protected
+    if ((user.role === 'SU' && req.user.role !== 'SU') || user.email === 'bradytj@gmail.com') {
+        return res.status(403).json({ msg: 'Action Forbidden: Super User accounts cannot be deleted by non-SUs.' });
     }
 
 

@@ -26,8 +26,8 @@ const register = async (req, res) => {
 
     await user.save();
 
-    // Notify admins
-    const admins = await User.find({ role: 'admin' });
+    // Notify admins and SUs
+    const admins = await User.find({ role: { $in: ['admin', 'SU'] } });
     const adminEmails = admins.map(admin => admin.email);
 
     // Send push notifications to admins

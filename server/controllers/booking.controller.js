@@ -89,8 +89,8 @@ const createBooking = async (req, res) => {
 
     const booking = await newBooking.save();
 
-    // Notify Admins via Email
-    const admins = await User.find({ role: 'admin' });
+    // Notify Admins and SUs via Email
+    const admins = await User.find({ role: { $in: ['admin', 'SU'] } });
     const adminEmails = admins.map(admin => admin.email);
     const requestingUser = await User.findById(req.user.id); // Get username
 
@@ -135,7 +135,7 @@ const updateBooking = async (req, res) => {
     const originalStatus = booking.status;
     const sendEmail = require('../services/email.service');
 
-    if (loggedInUser.role === 'admin') {
+    if (loggedInUser.role === 'admin' || loggedInUser.role === 'SU') {
         if (!['confirmed', 'cancelled', 'denied'].includes(status)) {
             return res.status(400).json({ msg: 'Admin can only set status to "confirmed", "cancelled", or "denied".' });
         }
@@ -225,7 +225,7 @@ const deleteBooking = async (req, res) => {
     if (!booking) return res.status(404).json({ msg: 'Booking not found' });
 
     const loggedInUser = await User.findById(req.user.id);
-    if (loggedInUser.role !== 'admin') {
+    if (loggedInUser.role !== 'admin' && loggedInUser.role !== 'SU') {
       return res.status(401).json({ msg: 'Not authorized' });
     }
 
