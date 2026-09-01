@@ -240,17 +240,40 @@ const deleteBookingsByYear = async (req, res) => {
 
 const exportBookings = async (req, res) => {
   try {
-    const bookings = await Booking.find().populate('user', 'username email').lean();
+    const { formatDate } = require('../utils/dateUtils');
+    const bookings = await Booking.find()
+      .populate('user', 'username email')
+      .populate('editHistory.editedBy', 'username')
+      .lean();
+
     const fields = [
       { label: 'Booking ID', value: '_id' },
       { label: 'User ID', value: 'user._id' },
       { label: 'Username', value: 'user.username' },
       { label: 'Email', value: 'user.email' },
-      { label: 'From Date', value: 'dateFrom' },
-      { label: 'To Date', value: 'dateTo' },
+      { label: 'From Date', value: (row) => formatDate(row.dateFrom) },
+      { label: 'To Date', value: (row) => formatDate(row.dateTo) },
       { label: 'Colour', value: (row) => row.colours ? row.colours.join(', ') : 'N/A' },
       { label: 'Status', value: 'status' },
-      { label: 'Requested At', value: 'createdAt' },
+      { label: 'Requested At', value: (row) => formatDate(row.createdAt) },
+      { 
+        label: 'Is Adjusted', 
+        value: (row) => (row.editHistory && row.editHistory.length > 0) ? 'Yes' : 'No' 
+      },
+      { 
+        label: 'Adjustment Count', 
+        value: (row) => (row.editHistory && row.editHistory.length > 0) ? row.editHistory.length : 0 
+      },
+      { 
+        label: 'Adjustment History', 
+        value: (row) => {
+          if (!row.editHistory || row.editHistory.length === 0) return 'None';
+          return row.editHistory.map((h, idx) => {
+            const editorName = h.editedBy?.username || 'Admin';
+            return `[#${idx + 1} at ${formatDate(h.editedAt)} by ${editorName}] Was: ${formatDate(h.previousDateFrom)} to ${formatDate(h.previousDateTo)}. Reason: "${h.reason}"`;
+          }).join(' | ');
+        }
+      }
     ];
     const json2csvParser = new Parser({ fields });
     const csv = json2csvParser.parse(bookings);
