@@ -18,45 +18,33 @@ const getUsers = async (req, res) => {
 };
 
 // @route   PATCH /api/admin/users/:id
-
-// @desc    Update a user's status and/or role
-
-// @access  Admin
-
+// @desc    Update a user's status, role, permissions, or colour scopes
+// @access  Admin/SU
 const updateUser = async (req, res) => {
-
-  const { status, role } = req.body;
-
-
+  const { status, role, permissions, managedColours, allowedBookableColours } = req.body;
 
   // Prevent admin from modifying their own account status/role to avoid lockout
-
   if (req.params.id === req.user.id) {
-
     return res.status(403).json({ msg: 'Action Forbidden: You cannot modify your own account privileges.' });
-
   }
 
-
+  // Only SUs are allowed to modify permissions or scopes
+  if (permissions || managedColours || allowedBookableColours) {
+    if (req.user.role !== 'SU') {
+      return res.status(403).json({ msg: 'Action Forbidden: Only Super Users (SU) can configure granular permissions or scopes.' });
+    }
+  }
 
   try {
-
     const user = await User.findById(req.params.id);
-
     if (!user) {
-
       return res.status(404).json({ msg: 'User not found' });
-
     }
-
-
 
     // Protect SU accounts from modification by non-SUs, and ensure the specific Super Admin email is protected
     if ((user.role === 'SU' && req.user.role !== 'SU') || user.email === 'bradytj@gmail.com') {
         return res.status(403).json({ msg: 'Action Forbidden: Super User accounts cannot be modified by non-SUs.' });
     }
-
-
 
     // Update status if provided and valid
     if (status) {
@@ -89,8 +77,6 @@ const updateUser = async (req, res) => {
       }
     }
 
-
-
     // Update role if provided and valid
     if (role) {
       if (!['user', 'admin', 'SU'].includes(role)) {
@@ -99,12 +85,39 @@ const updateUser = async (req, res) => {
       user.role = role;
     }
 
+    // Update granular permissions if provided and valid
+    if (permissions) {
+      if (typeof permissions.canEditApprovedBookings === 'boolean') {
+        user.permissions.canEditApprovedBookings = permissions.canEditApprovedBookings;
+      }
+      if (typeof permissions.canDeleteUsers === 'boolean') {
+        user.permissions.canDeleteUsers = permissions.canDeleteUsers;
+      }
+      if (typeof permissions.canClearSchedules === 'boolean') {
+        user.permissions.canClearSchedules = permissions.canClearSchedules;
+      }
+    }
 
+    const validColours = ['Blue', 'Red', 'Orange', 'Yellow', 'Green'];
+
+    // Update managed colours (for approvals)
+    if (managedColours) {
+      if (!Array.isArray(managedColours) || !managedColours.every(c => validColours.includes(c))) {
+        return res.status(400).json({ msg: 'Invalid managed colours scope provided.' });
+      }
+      user.managedColours = managedColours;
+    }
+
+    // Update allowed bookable colours (for requests)
+    if (allowedBookableColours) {
+      if (!Array.isArray(allowedBookableColours) || !allowedBookableColours.every(c => validColours.includes(c))) {
+        return res.status(400).json({ msg: 'Invalid allowed bookable colours scope provided.' });
+      }
+      user.allowedBookableColours = allowedBookableColours;
+    }
 
     await user.save();
-
     const updatedUser = await User.findById(req.params.id).select('-password');
-
     res.json(updatedUser);
 
   } catch (err) {
@@ -131,17 +144,16 @@ const deleteUser = async (req, res) => {
 
     const userId = req.params.id;
 
-    
-
     // Prevent admin from deleting their own account
-
     if (userId === req.user.id) {
-
         return res.status(403).json({ msg: 'Action Forbidden: You cannot delete your own account.' });
-
     }
 
-
+    // Enforce canDeleteUsers permission check for non-SUs
+    const actor = await User.findById(req.user.id);
+    if (actor.role !== 'SU' && !actor.permissions?.canDeleteUsers) {
+        return res.status(403).json({ msg: 'Access Denied: You do not have permission to delete users.' });
+    }
 
     const user = await User.findById(userId);
 
@@ -205,6 +217,11 @@ const deleteUser = async (req, res) => {
 
 const deleteAllBookings = async (req, res) => {
   try {
+    const actor = await User.findById(req.user.id);
+    if (actor.role !== 'SU' && !actor.permissions?.canClearSchedules) {
+      return res.status(403).json({ msg: 'Access Denied: You do not have permission to clear schedules or bookings.' });
+    }
+
     await Booking.deleteMany({});
     res.json({ msg: 'All bookings have been deleted.' });
   } catch (err) {
@@ -222,6 +239,11 @@ const deleteBookingsByYear = async (req, res) => {
   }
 
   try {
+    const actor = await User.findById(req.user.id);
+    if (actor.role !== 'SU' && !actor.permissions?.canClearSchedules) {
+      return res.status(403).json({ msg: 'Access Denied: You do not have permission to clear schedules or bookings.' });
+    }
+
     const startDate = new Date(Date.UTC(yearNum, 0, 1));
     const endDate = new Date(Date.UTC(yearNum, 11, 31, 23, 59, 59, 999));
 

@@ -60,10 +60,18 @@ const createBooking = async (req, res) => {
     }
 
     const assignedColours = [...new Set(overlappingPeriods.map(p => p.color))].filter(c => c !== '');
-    const containsRestricted = assignedColours.some(c => ['Red', 'Green'].includes(c));
+    const requester = await User.findById(req.user.id);
 
-    if (containsRestricted || !assignedColours.every(c => allowedColors.includes(c))) {
-      return res.status(400).json({ msg: 'Bookings can only be requested for Blue, Orange, or Yellow periods.' });
+    if (requester.role !== 'SU') {
+      const bookable = requester.allowedBookableColours || [];
+      if (bookable.length === 0) {
+        return res.status(403).json({ msg: 'Your account does not have permissions to request bookings for any colour periods yet.' });
+      }
+      
+      const isAuthorized = assignedColours.every(c => bookable.includes(c));
+      if (!isAuthorized) {
+        return res.status(400).json({ msg: `Your account is only authorized to request bookings for the following colours: [${bookable.join(', ')}].` });
+      }
     }
 
     const conflictingBooking = await Booking.findOne({
@@ -91,8 +99,14 @@ const createBooking = async (req, res) => {
 
     const booking = await newBooking.save();
 
-    // Notify Admins and SUs via Email
-    const admins = await User.find({ role: { $in: ['admin', 'SU'] } });
+    // Notify Admins and SUs via Email (filtered by colour scope)
+    const admins = await User.find({
+      role: { $in: ['admin', 'SU'] },
+      $or: [
+        { role: 'SU' },
+        { managedColours: { $all: assignedColours } }
+      ]
+    });
     const adminEmails = admins.map(admin => admin.email);
     const requestingUser = await User.findById(req.user.id); // Get username
 
@@ -138,6 +152,18 @@ const updateBooking = async (req, res) => {
     const sendEmail = require('../services/email.service');
 
     if (loggedInUser.role === 'admin' || loggedInUser.role === 'SU') {
+        if (loggedInUser.role === 'admin') {
+            const managed = loggedInUser.managedColours || [];
+            if (managed.length === 0) {
+                return res.status(403).json({ msg: 'Access Denied: Your account does not have permissions to approve or decline bookings for any colour periods yet.' });
+            }
+            
+            const isAuthorized = booking.colours.every(c => managed.includes(c));
+            if (!isAuthorized) {
+                return res.status(403).json({ msg: `Access Denied: Your account is only authorized to manage bookings for the following colours: [${managed.join(', ')}].` });
+            }
+        }
+
         if (!['confirmed', 'cancelled', 'denied'].includes(status)) {
             return res.status(400).json({ msg: 'Admin can only set status to "confirmed", "cancelled", or "denied".' });
         }
@@ -267,8 +293,27 @@ const adjustBookingDates = async (req, res) => {
       return res.status(404).json({ msg: 'Booking not found.' });
     }
 
-    // 2. Schedule Color Validation (Blue, Orange, Yellow only)
-    const allowedColors = ['Blue', 'Orange', 'Yellow'];
+    const actor = await User.findById(req.user.id);
+
+    // 1. Check general editing permissions for non-SUs
+    if (actor.role !== 'SU' && !actor.permissions?.canEditApprovedBookings) {
+      return res.status(403).json({ msg: 'Access Denied: You do not have permission to edit approved bookings.' });
+    }
+
+    // 2. Check original booking colour permissions for admin
+    if (actor.role === 'admin') {
+      const managed = actor.managedColours || [];
+      if (managed.length === 0) {
+        return res.status(403).json({ msg: 'Access Denied: Your account does not have permissions to manage bookings of any colours.' });
+      }
+      
+      const isOriginalAuthorized = booking.colours.every(c => managed.includes(c));
+      if (!isOriginalAuthorized) {
+        return res.status(403).json({ msg: `Access Denied: You are not authorized to manage the original colours of this booking: [${booking.colours.join(', ')}].` });
+      }
+    }
+
+    // 2. Schedule Color Validation
     const overlappingPeriods = await ColorSchedule.find({
       $or: [
         { startDate: { $lte: dateFrom }, endDate: { $gte: dateFrom } }, // Start date inside a period
@@ -282,10 +327,14 @@ const adjustBookingDates = async (req, res) => {
     }
 
     const assignedColours = [...new Set(overlappingPeriods.map(p => p.color))].filter(c => c !== '');
-    const containsRestricted = assignedColours.some(c => ['Red', 'Green'].includes(c));
 
-    if (containsRestricted || !assignedColours.every(c => allowedColors.includes(c))) {
-      return res.status(400).json({ msg: 'Adjusted dates can only fall inside Blue, Orange, or Yellow periods.' });
+    // 3. Check new booking colour permissions for admin
+    if (actor.role !== 'SU') {
+      const managed = actor.managedColours || [];
+      const isNewAuthorized = assignedColours.every(c => managed.includes(c));
+      if (!isNewAuthorized) {
+        return res.status(403).json({ msg: `Access Denied: You are not authorized to adjust this booking to the new colours: [${assignedColours.join(', ')}].` });
+      }
     }
 
     // 3. Conflict validation (excl. current booking)

@@ -26,8 +26,14 @@ const register = async (req, res) => {
 
     await user.save();
 
-    // Notify admins and SUs
-    const admins = await User.find({ role: { $in: ['admin', 'SU'] } });
+    // Notify admins (with user management rights) and SUs
+    const admins = await User.find({
+      role: { $in: ['admin', 'SU'] },
+      $or: [
+        { role: 'SU' },
+        { 'permissions.canDeleteUsers': true }
+      ]
+    });
     const adminEmails = admins.map(admin => admin.email);
 
     // Send push notifications to admins

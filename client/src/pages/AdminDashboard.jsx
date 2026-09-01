@@ -361,6 +361,72 @@ const AdminDashboard = () => {
   const [editModalError, setEditModalError] = useState('');
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   const [toggledHistory, setToggledHistory] = useState({});
+  const [expandedUserConfig, setExpandedUserConfig] = useState({});
+  const [userConfigDrafts, setUserConfigDrafts] = useState({});
+
+  const handleToggleUserConfig = (u) => {
+    setExpandedUserConfig(prev => {
+      const isOpening = !prev[u._id];
+      if (isOpening) {
+        setUserConfigDrafts(drafts => ({
+          ...drafts,
+          [u._id]: {
+            permissions: {
+              canEditApprovedBookings: u.permissions?.canEditApprovedBookings ?? true,
+              canDeleteUsers: u.permissions?.canDeleteUsers ?? true,
+              canClearSchedules: u.permissions?.canClearSchedules ?? true,
+            },
+            managedColours: u.managedColours || [],
+            allowedBookableColours: u.allowedBookableColours || []
+          }
+        }));
+      }
+      return { ...prev, [u._id]: isOpening };
+    });
+  };
+
+  const handlePermissionCheckboxChange = (userId, field, checked) => {
+    setUserConfigDrafts(prev => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        permissions: {
+          ...prev[userId].permissions,
+          [field]: checked
+        }
+      }
+    }));
+  };
+
+  const handleColourCheckboxChange = (userId, arrayField, colour, checked) => {
+    setUserConfigDrafts(prev => {
+      const currentList = prev[userId]?.[arrayField] || [];
+      const newList = checked 
+        ? [...currentList, colour] 
+        : currentList.filter(c => c !== colour);
+      return {
+        ...prev,
+        [userId]: {
+          ...prev[userId],
+          [arrayField]: newList
+        }
+      };
+    });
+  };
+
+  const handleSaveUserConfig = async (userId) => {
+    const draft = userConfigDrafts[userId];
+    if (!draft) return;
+    try {
+      await api.patch(`/admin/users/${userId}`, draft);
+      alert('Permissions and scopes updated successfully!');
+      setExpandedUserConfig(prev => ({ ...prev, [userId]: false }));
+      await fetchData();
+    } catch (err) {
+      const errorMsg = err.response?.data?.msg || 'Failed to update permissions.';
+      alert(errorMsg);
+    }
+  };
 
   const handleToggleHistory = (id) => {
     setToggledHistory(prev => ({ ...prev, [id]: !prev[id] }));
@@ -583,9 +649,16 @@ const AdminDashboard = () => {
         break;
     }
 
+    const showConfigBtn = user?.role === 'SU' && u.status === 'active';
+
     return (
         <>
             {actionButtons}
+            {showConfigBtn && (
+                <button className="btn-admin btn-neutral" onClick={() => handleToggleUserConfig(u)} style={{ marginRight: '5px' }}>
+                    {expandedUserConfig[u._id] ? 'Hide Settings' : '⚙️ Permissions'}
+                </button>
+            )}
             <button className="btn-admin btn-remove" onClick={() => handleDeleteUser(u._id, u.username)}>Delete</button>
         </>
     );
@@ -815,28 +888,138 @@ const AdminDashboard = () => {
               </thead>
               <tbody>
                 {users.map(u => (
-                  <tr key={u._id}>
-                    <td>{u.username}</td>
-                    <td>{u.email}</td>
-                    <td>{u.status}</td>
-                    <td>
-                        <select 
-                            value={u.role} 
-                            onChange={(e) => handleUpdateUser(u._id, 'role', e.target.value)}
-                            style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
-                            disabled={u.role === 'SU' && user?.role !== 'SU'}
-                        >
-                            <option value="user">user</option>
-                            <option value="admin">admin</option>
-                            <option value="SU">SU</option>
-                        </select>
-                    </td>
-                    <td>
-                        <div className="action-group">
-                            {renderUserActions(u)}
-                        </div>
-                    </td>
-                  </tr>
+                  <React.Fragment key={u._id}>
+                    <tr>
+                      <td>{u.username}</td>
+                      <td>{u.email}</td>
+                      <td>{u.status}</td>
+                      <td>
+                          <select 
+                              value={u.role} 
+                              onChange={(e) => handleUpdateUser(u._id, 'role', e.target.value)}
+                              style={{ padding: '5px', borderRadius: '4px', border: '1px solid #ccc' }}
+                              disabled={u.role === 'SU' && user?.role !== 'SU'}
+                          >
+                              <option value="user">user</option>
+                              <option value="admin">admin</option>
+                              <option value="SU">SU</option>
+                          </select>
+                      </td>
+                      <td>
+                          <div className="action-group">
+                              {renderUserActions(u)}
+                          </div>
+                      </td>
+                    </tr>
+                    {expandedUserConfig[u._id] && userConfigDrafts[u._id] && (
+                      <tr key={`${u._id}-config`} style={{ background: '#f9fafd' }}>
+                        <td colSpan="5" style={{ padding: '15px', borderBottom: '2px solid #007bff' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                            <h4 style={{ margin: '0 0 5px 0', color: '#0056b3', textAlign: 'left' }}>⚙️ Permissions & Scopes for {u.username}</h4>
+                            
+                            {/* 1. Administrative Action Checkboxes */}
+                            {(u.role === 'admin' || u.role === 'SU') && (
+                              <div style={{ textAlign: 'left' }}>
+                                <strong style={{ display: 'block', marginBottom: '8px', fontSize: '13px' }}>Administrative Actions:</strong>
+                                <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap' }}>
+                                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                                    <input 
+                                      type="checkbox" 
+                                      checked={userConfigDrafts[u._id].permissions.canEditApprovedBookings} 
+                                      onChange={(e) => handlePermissionCheckboxChange(u._id, 'canEditApprovedBookings', e.target.checked)}
+                                    />
+                                    Can Edit Approved Bookings
+                                  </label>
+                                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                                    <input 
+                                      type="checkbox" 
+                                      checked={userConfigDrafts[u._id].permissions.canDeleteUsers} 
+                                      onChange={(e) => handlePermissionCheckboxChange(u._id, 'canDeleteUsers', e.target.checked)}
+                                    />
+                                    Can Delete Users
+                                  </label>
+                                  <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                                    <input 
+                                      type="checkbox" 
+                                      checked={userConfigDrafts[u._id].permissions.canClearSchedules} 
+                                      onChange={(e) => handlePermissionCheckboxChange(u._id, 'canClearSchedules', e.target.checked)}
+                                    />
+                                    Can Clear Schedules & Bookings
+                                  </label>
+                                </div>
+                              </div>
+                            )}
+
+                            {/* 2. Bookable Colours Scopes */}
+                            <div style={{ textAlign: 'left' }}>
+                              <strong style={{ display: 'block', marginBottom: '8px', fontSize: '13px' }}>Allowed Bookable Colours (For Requesting):</strong>
+                              <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                                {['Blue', 'Red', 'Orange', 'Yellow', 'Green'].map(col => (
+                                  <label key={col} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                                    <input 
+                                      type="checkbox" 
+                                      checked={userConfigDrafts[u._id].allowedBookableColours.includes(col)} 
+                                      onChange={(e) => handleColourCheckboxChange(u._id, 'allowedBookableColours', col, e.target.checked)}
+                                    />
+                                    <span style={{ 
+                                      display: 'inline-block', 
+                                      width: '10px', 
+                                      height: '10px', 
+                                      borderRadius: '50%', 
+                                      background: col === 'Yellow' ? '#e1b12c' : col.toLowerCase() 
+                                    }}></span>
+                                    {col}
+                                  </label>
+                                ))}
+                              </div>
+                              <span style={{ fontSize: '11px', color: '#666', marginTop: '4px', display: 'block' }}>
+                                <em>Note: If empty, this user cannot request bookings for any weeks.</em>
+                              </span>
+                            </div>
+
+                            {/* 3. Managed Colours Scopes (Only for Admin/SU) */}
+                            {(u.role === 'admin' || u.role === 'SU') && (
+                              <div style={{ textAlign: 'left' }}>
+                                <strong style={{ display: 'block', marginBottom: '8px', fontSize: '13px' }}>Managed Colours (For Approving/Confirming):</strong>
+                                <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+                                  {['Blue', 'Red', 'Orange', 'Yellow', 'Green'].map(col => (
+                                    <label key={col} style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', cursor: 'pointer' }}>
+                                      <input 
+                                        type="checkbox" 
+                                        checked={userConfigDrafts[u._id].managedColours.includes(col)} 
+                                        onChange={(e) => handleColourCheckboxChange(u._id, 'managedColours', col, e.target.checked)}
+                                      />
+                                      <span style={{ 
+                                        display: 'inline-block', 
+                                        width: '10px', 
+                                        height: '10px', 
+                                        borderRadius: '50%', 
+                                        background: col === 'Yellow' ? '#e1b12c' : col.toLowerCase() 
+                                      }}></span>
+                                      {col}
+                                    </label>
+                                  ))}
+                                </div>
+                                <span style={{ fontSize: '11px', color: '#666', marginTop: '4px', display: 'block' }}>
+                                  <em>Note: If empty, this admin cannot confirm or decline any bookings.</em>
+                                </span>
+                              </div>
+                            )}
+
+                            {/* 4. Save Controls */}
+                            <div style={{ display: 'flex', justifyContent: 'flex-start', gap: '10px', marginTop: '5px' }}>
+                              <button className="btn-admin btn-approve" onClick={() => handleSaveUserConfig(u._id)} style={{ padding: '6px 12px', fontSize: '12px' }}>
+                                Save Settings
+                              </button>
+                              <button className="btn-admin btn-neutral" onClick={() => setExpandedUserConfig(prev => ({ ...prev, [u._id]: false }))} style={{ padding: '6px 12px', fontSize: '12px' }}>
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </React.Fragment>
                 ))}
               </tbody>
             </table>

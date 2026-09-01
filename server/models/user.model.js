@@ -27,6 +27,28 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['pending', 'active', 'rejected'],
     default: 'pending'
+  },
+  permissions: {
+    canEditApprovedBookings: {
+      type: Boolean,
+      default: true
+    },
+    canDeleteUsers: {
+      type: Boolean,
+      default: true
+    },
+    canClearSchedules: {
+      type: Boolean,
+      default: true
+    }
+  },
+  managedColours: {
+    type: [String],
+    default: []
+  },
+  allowedBookableColours: {
+    type: [String],
+    default: []
   }
 }, {
   timestamps: true

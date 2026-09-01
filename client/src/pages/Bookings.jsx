@@ -13,8 +13,6 @@ const colourMap = {
   Green: '#90ee90',
 };
 
-const bookableColours = ['Blue', 'Orange', 'Yellow'];
-
 const Bookings = () => {
   const [myBookings, setMyBookings] = useState([]);
   const [publicBookings, setPublicBookings] = useState([]);
@@ -22,8 +20,15 @@ const Bookings = () => {
   const [selection, setSelection] = useState({ start: null, end: null });
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState('');
-  const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
+  const { isAuthenticated, loading: authLoading, user } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  const userBookableColours = useMemo(() => {
+    if (user?.role === 'SU') {
+      return ['Blue', 'Red', 'Orange', 'Yellow', 'Green'];
+    }
+    return user?.allowedBookableColours || [];
+  }, [user]);
 
   const currentYear = new Date().getFullYear();
   const currentMonth = new Date().getMonth();
@@ -167,8 +172,8 @@ const Bookings = () => {
         }
 
         const weekColor = scheduleMap.get(weekStartKey) || '';
-        if (!bookableColours.includes(weekColor)) {
-            alert('Error: Your selection includes dates that are not in a bookable colour period (Blue, Orange, or Yellow).');
+        if (!userBookableColours.includes(weekColor)) {
+            alert(`Error: Your selection includes dates in ${weekColor || 'an unconfigured'} period which you are not authorized to book.`);
             return;
         }
         current = addDaysUTC(current, 1);
@@ -240,7 +245,7 @@ const Bookings = () => {
         let className = "day-cell";
         if (booking) {
             className += ` ${booking.status}`;
-        } else if (bookableColours.includes(colour)) {
+        } else if (userBookableColours.includes(colour)) {
             className += ' bookable';
         }
         
