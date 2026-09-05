@@ -107,7 +107,10 @@ const login = async (req, res) => {
       user: {
         id: user.id,
         role: user.role,
-        username: user.username
+        username: user.username,
+        permissions: user.permissions,
+        managedColours: user.managedColours,
+        allowedBookableColours: user.allowedBookableColours
       },
     };
 
@@ -126,7 +129,21 @@ const login = async (req, res) => {
   }
 };
 
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ msg: 'User not found' });
+    }
+    res.json(user);
+  } catch (err) {
+    console.error('Error in getMe:', err.message);
+    res.status(500).send('Server error');
+  }
+};
+
 module.exports = {
   register,
   login,
+  getMe,
 };

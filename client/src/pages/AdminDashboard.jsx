@@ -680,6 +680,16 @@ const AdminDashboard = () => {
     <div className="admin-dashboard-container">
       <h2 className="admin-dashboard-title">Admin Dashboard</h2>
 
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+        <button 
+          className="btn-admin btn-summary" 
+          onClick={() => navigate('/admin/cycle-setup')}
+          style={{ padding: '10px 20px', fontSize: '1rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          📅 Configure 4-Year Cycle Setup
+        </button>
+      </div>
+
       <Accordion title="Reports">
         <p>Project documentation and CSV data exports.</p>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '15px' }}>

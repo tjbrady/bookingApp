@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useMemo } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext.jsx';
+import { ReportContext } from '../context/ReportContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { formatDate, toUTCKey, createUTCDate, getStartOfWeekUTC, addDaysUTC } from '../utils/dateUtils';
 import './Calendar.css';
@@ -21,7 +22,15 @@ const Bookings = () => {
   const [loadingData, setLoadingData] = useState(true);
   const [error, setError] = useState('');
   const { isAuthenticated, loading: authLoading, user } = useContext(AuthContext);
+  const { generateUserReport, reportLoading, reportError } = useContext(ReportContext);
   const navigate = useNavigate();
+
+  const handlePrintUserReportClick = async () => {
+    await generateUserReport();
+    if (reportError) {
+        alert(reportError);
+    }
+  };
 
   const userBookableColours = useMemo(() => {
     if (user?.role === 'SU') {
@@ -305,12 +314,35 @@ const Bookings = () => {
           {/* ... existing header code ... */}
           <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <div className="header-title-column" style={{ flex: '1 1 200px', minWidth: '200px' }}>
-              <div className="bookings-request-notice">
-                <span className="notice-icon">💡</span>
-                <span className="notice-text">
-                  <strong>Blue, Orange & Yellow - ONLY!</strong><br />
-                  Bookings are for nights. (e.g. Fri - Sun means you leave Monday morning)
-                </span>
+              <div className="bookings-request-notice" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span className="notice-icon">💡</span>
+                  <span className="notice-text">
+                    <strong>Blue, Orange & Yellow - ONLY!</strong><br />
+                    Bookings are for nights. (e.g. Fri - Sun means you leave Monday morning)
+                  </span>
+                </div>
+                <button 
+                  onClick={handlePrintUserReportClick} 
+                  disabled={reportLoading}
+                  style={{
+                    marginTop: '4px',
+                    padding: '6px 12px',
+                    fontSize: '0.85rem',
+                    backgroundColor: '#0284c7',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontWeight: 'bold',
+                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                  }}
+                >
+                  📄 {reportLoading ? 'Generating...' : 'Print Bookings Report'}
+                </button>
               </div>
             </div>
             <div className="header-bookings-list-column" style={{ flex: '2 1 400px', minWidth: '300px' }}>

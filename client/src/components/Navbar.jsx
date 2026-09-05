@@ -1,13 +1,11 @@
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { ReportContext } from '../context/ReportContext';
 import PushNotificationToggle from './PushNotificationToggle';
 import './Navbar.css';
 
 const Navbar = () => {
   const { isAuthenticated, user, logout, loading } = useContext(AuthContext);
-  const { generateUserReport, reportLoading, reportError } = useContext(ReportContext);
   const navigate = useNavigate();
 
   const handleLogout = () => {
@@ -15,29 +13,14 @@ const Navbar = () => {
     navigate('/login');
   };
 
-  const handlePrintUserReportClick = async () => {
-    await generateUserReport();
-    if (reportError) {
-        alert(reportError);
-    }
-  };
-
   const authLinks = (
     <>
-      <li className="navbar-dropdown-parent">
+      <li>
         <Link to="/bookings">Bookings</Link>
-        <ul className="navbar-dropdown">
-          <li><button onClick={handlePrintUserReportClick} disabled={reportLoading}>
-              {reportLoading ? 'Generating...' : 'Print Report'}
-          </button></li>
-        </ul>
       </li>
       {(user?.role === 'admin' || user?.role === 'SU') && (
-        <li className="navbar-dropdown-parent">
+        <li>
           <Link to="/admin">Admin</Link>
-          <ul className="navbar-dropdown">
-            <li><Link to="/admin/cycle-setup">4 Year Cycle Setup</Link></li>
-          </ul>
         </li>
       )}
       <li style={{ display: 'flex', alignItems: 'center', padding: '0 8px' }}>

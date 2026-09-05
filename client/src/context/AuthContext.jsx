@@ -64,7 +64,7 @@ export const AuthProvider = ({ children }) => {
     // Register background service worker
     registerServiceWorker();
 
-    const loadUser = () => {
+    const loadUser = async () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
@@ -72,10 +72,16 @@ export const AuthProvider = ({ children }) => {
           // Check if token is expired
           if (decoded.exp * 1000 < Date.now()) {
             dispatch({ type: AUTH_ERROR });
+            return;
           }
-          else {
-            // In a real app, you'd verify the token against the backend here
-            // For simplicity, we'll just decode and set the user
+
+          // Fetch the latest up-to-date user data from the backend
+          try {
+            const res = await api.get('/auth/me');
+            dispatch({ type: USER_LOADED, payload: res.data });
+          } catch (apiErr) {
+            console.error('Failed to fetch user from backend, falling back to token:', apiErr.message);
+            // Fallback to decoded token payload in case backend is unreachable but token is valid
             dispatch({ type: USER_LOADED, payload: decoded.user });
           }
         }
