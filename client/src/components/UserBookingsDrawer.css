@@ -265,6 +265,12 @@
   color: #065f46;
 }
 
+.badge-completed {
+  background-color: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
 .badge-pending {
   background-color: #fef3c7;
   color: #92400e;
@@ -273,6 +279,12 @@
 .badge-cancellation-pending {
   background-color: #ffedd5;
   color: #9a3412;
+}
+
+.badge-expired {
+  background-color: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
 }
 
 .badge-denied {
@@ -288,6 +300,14 @@
 .badge-default {
   background-color: #e2e8f0;
   color: #1e293b;
+}
+
+.drawer-card.is-past {
+  opacity: 0.92;
+}
+
+.drawer-card.is-past.status-confirmed {
+  border-left-color: #059669;
 }
 
 /* Meta row (colours) */
@@ -341,6 +361,12 @@
 }
 
 .notice-cancelled {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  color: #64748b;
+}
+
+.notice-expired {
   background-color: #f8fafc;
   border: 1px solid #e2e8f0;
   color: #64748b;

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useBookings } from '../context/BookingContext';
-import { formatDate } from '../utils/dateUtils';
+import { formatDate, toUTCKey } from '../utils/dateUtils';
 import './UserBookingsDrawer.css';
 
 const colourMap = {
@@ -37,6 +37,8 @@ const UserBookingsDrawer = () => {
   const [actionInProgressId, setActionInProgressId] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
+
+  const todayKey = new Date().toISOString().split('T')[0];
 
   // Close drawer on Escape key
   useEffect(() => {
@@ -86,7 +88,22 @@ const UserBookingsDrawer = () => {
     }
   };
 
-  const getStatusBadge = (status) => {
+  const getStatusBadge = (status, isPast) => {
+    if (isPast) {
+      if (status === 'confirmed') {
+        return <span className="drawer-badge badge-completed">✓ Completed</span>;
+      }
+      if (status === 'pending' || status === 'cancellation_pending') {
+        return <span className="drawer-badge badge-expired">⏱ Expired</span>;
+      }
+      if (status === 'denied') {
+        return <span className="drawer-badge badge-denied">✕ Rejected</span>;
+      }
+      if (status === 'cancelled') {
+        return <span className="drawer-badge badge-cancelled">⊘ Cancelled</span>;
+      }
+    }
+
     switch (status) {
       case 'confirmed':
         return <span className="drawer-badge badge-confirmed">✓ Approved</span>;
@@ -176,9 +193,9 @@ const UserBookingsDrawer = () => {
               <h3>No bookings found</h3>
               <p>
                 {activeTab === 'active'
-                  ? "You don't have any active pending or confirmed bookings."
+                  ? "You don't have any upcoming pending or approved bookings."
                   : activeTab === 'history'
-                  ? 'No past or rejected bookings recorded.'
+                  ? 'No past, completed, or rejected bookings recorded.'
                   : 'You have not made any booking requests yet.'}
               </p>
               <button className="drawer-action-btn primary" onClick={handleNavigateToBookings}>
@@ -188,6 +205,8 @@ const UserBookingsDrawer = () => {
           ) : (
             <div className="drawer-cards-list">
               {displayedBookings.map((booking) => {
+                const startKey = toUTCKey(booking.dateFrom);
+                const isPast = startKey <= todayKey;
                 const isPending = booking.status === 'pending';
                 const isConfirmed = booking.status === 'confirmed';
                 const isCancellationPending = booking.status === 'cancellation_pending';
@@ -196,7 +215,10 @@ const UserBookingsDrawer = () => {
                 const isProcessing = actionInProgressId === booking._id;
 
                 return (
-                  <article key={booking._id} className={`drawer-card status-${booking.status}`}>
+                  <article
+                    key={booking._id}
+                    className={`drawer-card status-${booking.status} ${isPast ? 'is-past' : ''}`}
+                  >
                     {/* Card Top Row: Date & Status */}
                     <div className="card-top-row">
                       <div className="card-dates">
@@ -209,7 +231,7 @@ const UserBookingsDrawer = () => {
                         </div>
                       </div>
                       <div className="card-status-wrapper">
-                        {getStatusBadge(booking.status)}
+                        {getStatusBadge(booking.status, isPast)}
                       </div>
                     </div>
 
@@ -235,7 +257,7 @@ const UserBookingsDrawer = () => {
                     </div>
 
                     {/* Card Status Feedback Banner */}
-                    {isCancellationPending && (
+                    {isCancellationPending && !isPast && (
                       <div className="card-notice notice-warning">
                         <span className="notice-symbol">⚠️</span>
                         <span>
@@ -259,6 +281,13 @@ const UserBookingsDrawer = () => {
                       <div className="card-notice notice-cancelled">
                         <span className="notice-symbol">⊘</span>
                         <span>This booking request was cancelled.</span>
+                      </div>
+                    )}
+
+                    {isPast && isPending && (
+                      <div className="card-notice notice-expired">
+                        <span className="notice-symbol">⏱</span>
+                        <span>This booking request passed without approval and has expired.</span>
                       </div>
                     )}
 
@@ -288,8 +317,8 @@ const UserBookingsDrawer = () => {
                       </div>
                     )}
 
-                    {/* Card Action Buttons */}
-                    {(isPending || isConfirmed) && (
+                    {/* Card Action Buttons: only available for active/future bookings */}
+                    {!isPast && (isPending || isConfirmed) && (
                       <div className="card-actions">
                         {isPending && (
                           <button
@@ -305,7 +334,7 @@ const UserBookingsDrawer = () => {
                             className="card-btn btn-withdraw-outline"
                             onClick={() => onCancelClick(booking._id, booking.status)}
                             disabled={isProcessing}
-                            title="Request administrator to withdraw or cancel this confirmed reservation"
+                            title="Request administrator to withdraw or cancel this approved reservation"
                           >
                             {isProcessing ? 'Submitting...' : 'Request Cancellation / Withdraw'}
                           </button>
@@ -322,7 +351,7 @@ const UserBookingsDrawer = () => {
         {/* Footer */}
         <footer className="drawer-footer">
           <div className="footer-info">
-            <span className="footer-dot green" /> Confirmed
+            <span className="footer-dot green" /> Approved
             <span className="footer-dot amber" /> Pending
             <span className="footer-dot red" /> Rejected
           </div>

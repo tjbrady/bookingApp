@@ -33,9 +33,14 @@ The heart of the application is the rotating occupancy schedule, which follows a
 
 ### 18Oct26
 *   **UX (Mobile-First User Bookings Drawer):** Designed and deployed a dedicated, responsive `UserBookingsDrawer` component (bottom-sheet modal on mobile devices, right-side slide-over drawer on desktop) that presents every user (SU, Admin, or User) with a complete summary of their requested, approved, rejection-denied, and cancelled bookings.
-*   **Booking Cancellation & Withdrawal Workflow:** Integrated intuitive action buttons within the drawer:
+*   **Date-Based Active vs. Past Filtering:** Refined the booking categorization logic so that only strictly future bookings (`dateFrom > today`) are presented as "Active" and counted in badges. Bookings where the start date has passed (`dateFrom <= today`) transition automatically to "Past / History".
+*   **Terminology & Badge Consistency:** Standardized status terminology across the drawer:
+    *   Replaced the legacy footer legend label "Confirmed" with "Approved" to match the green capsule badge and UI style.
+    *   Past approved reservations are designated with a subtle green `✓ Completed` badge.
+    *   Past unreviewed requests are clearly designated with an `⏱ Expired` badge.
+*   **Booking Cancellation & Withdrawal Workflow:** Integrated intuitive action buttons within the drawer (restricted strictly to active/future bookings):
     *   **Pending Requests:** Direct "Cancel Request" action that instantly cancels the pending submission.
-    *   **Confirmed Bookings:** "Request Cancellation / Withdraw" action with confirmation, triggering the `cancellation_pending` workflow with real-time push alerts and admin notifications, preventing direct deletion while requesting administrator review.
+    *   **Approved Bookings:** "Request Cancellation / Withdraw" action with confirmation, triggering the `cancellation_pending` workflow with real-time push alerts and admin notifications, preventing direct deletion while requesting administrator review.
     *   **Rejected / Denied:** Clear visual badges distinguishing rejected requests from cancelled ones.
 *   **Space Optimization:** Eliminated the bulky, cluttered `.header-bookings-list-column` from the sticky calendar header on the Bookings page (which previously became hidden on mobile viewports via media queries), returning full vertical screen space to the calendar view.
 *   **Multi-Point Navigation:** Added non-intrusive triggers:

@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../services/api';
 import { AuthContext } from './AuthContext';
+import { toUTCKey } from '../utils/dateUtils';
 
 export const BookingContext = createContext();
 
@@ -76,11 +77,26 @@ export const BookingProvider = ({ children }) => {
   }, []);
 
   const activeBookings = useMemo(() => {
-    return myBookings.filter(b => ['pending', 'confirmed', 'cancellation_pending'].includes(b.status));
+    const todayKey = new Date().toISOString().split('T')[0];
+    return myBookings
+      .filter((b) => {
+        const startKey = toUTCKey(b.dateFrom);
+        const isFuture = startKey > todayKey;
+        return isFuture && ['pending', 'confirmed', 'cancellation_pending'].includes(b.status);
+      })
+      .sort((a, b) => new Date(a.dateFrom) - new Date(b.dateFrom));
   }, [myBookings]);
 
   const historyBookings = useMemo(() => {
-    return myBookings.filter(b => ['cancelled', 'denied'].includes(b.status));
+    const todayKey = new Date().toISOString().split('T')[0];
+    return myBookings
+      .filter((b) => {
+        const startKey = toUTCKey(b.dateFrom);
+        const isPast = startKey <= todayKey;
+        // Past bookings (even if confirmed/pending) or cancelled/denied bookings
+        return isPast || ['cancelled', 'denied'].includes(b.status);
+      })
+      .sort((a, b) => new Date(b.dateFrom) - new Date(a.dateFrom));
   }, [myBookings]);
 
   const activeCount = activeBookings.length;
