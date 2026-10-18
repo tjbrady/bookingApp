@@ -31,6 +31,18 @@ The heart of the application is the rotating occupancy schedule, which follows a
 
 ## 5. Evolution Log (Chronological)
 
+### 18Oct26
+*   **UX (Mobile-First User Bookings Drawer):** Designed and deployed a dedicated, responsive `UserBookingsDrawer` component (bottom-sheet modal on mobile devices, right-side slide-over drawer on desktop) that presents every user (SU, Admin, or User) with a complete summary of their requested, approved, rejection-denied, and cancelled bookings.
+*   **Booking Cancellation & Withdrawal Workflow:** Integrated intuitive action buttons within the drawer:
+    *   **Pending Requests:** Direct "Cancel Request" action that instantly cancels the pending submission.
+    *   **Confirmed Bookings:** "Request Cancellation / Withdraw" action with confirmation, triggering the `cancellation_pending` workflow with real-time push alerts and admin notifications, preventing direct deletion while requesting administrator review.
+    *   **Rejected / Denied:** Clear visual badges distinguishing rejected requests from cancelled ones.
+*   **Space Optimization:** Eliminated the bulky, cluttered `.header-bookings-list-column` from the sticky calendar header on the Bookings page (which previously became hidden on mobile viewports via media queries), returning full vertical screen space to the calendar view.
+*   **Multi-Point Navigation:** Added non-intrusive triggers:
+    *   **Navbar:** An interactive "My Requests" button with a real-time active count badge across the application.
+    *   **Calendar Header:** A "📋 My Requests" button located next to report generation in the calendar notice area.
+    *   **Mobile FAB:** A floating action pill button on mobile devices positioned for easy thumb access anywhere on the 24-month calendar.
+
 ### 22Jul26
 *   **Web Push Notifications:** Designed and implemented a native Web Push framework using the `web-push` Node library and standard browser Service Workers. Subscriptions are securely persisted in MongoDB per device, supporting multi-device push delivery for each user.
 *   **Alert Triggers:** Configured real-time push dispatches in parallel with database notifications: booking status changes (approvals, denials, cancellation requests) trigger instant owner alerts, and user registrations trigger instant alerts to all active administrators.

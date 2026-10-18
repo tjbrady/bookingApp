@@ -206,8 +206,102 @@
   text-align: left;
 }
 
+.btn-my-requests-trigger {
+  margin-top: 4px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
+  background-color: #0284c7;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-my-requests-trigger:hover {
+  background-color: #0369a1;
+}
+
+.bookings-header-badge {
+  background-color: #ffffff;
+  color: #0284c7;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 9999px;
+  line-height: 1.1;
+}
+
+.btn-print-report {
+  margin-top: 4px;
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  background-color: #475569;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.15s ease;
+  font-family: inherit;
+}
+
+.btn-print-report:hover:not(:disabled) {
+  background-color: #334155;
+}
+
+.mobile-bookings-fab {
+  display: none; /* Hidden on desktop */
+}
+
 /* Mobile Optimizations */
 @media (max-width: 768px) {
+  /* Floating Action Button for mobile */
+  .mobile-bookings-fab {
+    display: flex;
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1500;
+    align-items: center;
+    gap: 6px;
+    background-color: #0284c7;
+    color: #ffffff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 9999px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    box-shadow: 0 4px 16px rgba(2, 132, 199, 0.4), 0 2px 6px rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+    font-family: 'Josefin Sans', sans-serif, -apple-system, sans-serif;
+  }
+
+  .mobile-bookings-fab:active {
+    transform: scale(0.96);
+  }
+
+  .fab-badge {
+    background-color: #ffffff;
+    color: #0284c7;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 9999px;
+    line-height: 1;
+  }
+
   /* Reduce padding and sticky offset */
   .bookings-sticky-header {
     padding: 0.3rem 0.6rem; /* Ultra-slim mobile padding */
@@ -223,9 +317,8 @@
     font-size: 0.8rem; /* Smaller font on mobile portrait */
   }
   
-  /* Hide Instructions and My Bookings List to save space */
-  .header-instructions-column,
-  .header-bookings-list-column {
+  /* Hide Instructions to save space */
+  .header-instructions-column {
     display: none !important;
   }
 

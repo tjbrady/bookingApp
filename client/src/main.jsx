@@ -15,6 +15,7 @@ import FourYearCycleSetup from './pages/FourYearCycleSetup.jsx'; // New Import
 import AdminRoute from './components/AdminRoute.jsx';
 import { AuthProvider } from './context/AuthContext.jsx';
 import { ReportProvider } from './context/ReportContext.jsx';
+import { BookingProvider } from './context/BookingContext.jsx';
 
 
 const router = createBrowserRouter([
@@ -54,7 +55,9 @@ createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <AuthProvider>
       <ReportProvider>
-        <RouterProvider router={router} />
+        <BookingProvider>
+          <RouterProvider router={router} />
+        </BookingProvider>
       </ReportProvider>
     </AuthProvider>
   </React.StrictMode>,

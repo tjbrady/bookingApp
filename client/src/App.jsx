@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Navbar from './components/Navbar';
+import UserBookingsDrawer from './components/UserBookingsDrawer';
 import './App.css';
 
 function App() {
@@ -23,6 +24,7 @@ function App() {
       <main className="main-content">
         <Outlet />
       </main>
+      <UserBookingsDrawer />
     </div>
   );
 }

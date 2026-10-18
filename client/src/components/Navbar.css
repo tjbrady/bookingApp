@@ -137,7 +137,8 @@
 }
 
 /* Push Notification Navbar Toggle Flat Text-Link Styles */
-.navbar-push-toggle {
+.navbar-push-toggle,
+.navbar-my-bookings-btn {
   background: none;
   border: none;
   padding: 0;
@@ -148,9 +149,26 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   text-decoration: none;
   transition: color 0.2s ease, opacity 0.2s ease;
+  color: #ffffff;
+}
+
+.navbar-my-bookings-btn:hover {
+  text-decoration: underline;
+  color: #e0e0e0;
+}
+
+.navbar-booking-badge {
+  background-color: #0284c7;
+  color: #ffffff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 9999px;
+  line-height: 1.1;
+  display: inline-block;
 }
 
 .navbar-push-toggle.unsubscribed {
@@ -167,7 +185,8 @@
 }
 
 @media (max-width: 768px) {
-  .navbar-push-toggle {
+  .navbar-push-toggle,
+  .navbar-my-bookings-btn {
     font-size: 0.9rem; /* Responsive sizing matching surrounding items on mobile */
   }
 }
@@ -184,7 +203,8 @@
 
   .navbar-list a,
   .navbar-dropdown-parent > span,
-  .navbar-push-toggle {
+  .navbar-push-toggle,
+  .navbar-my-bookings-btn {
     font-size: 0.8rem !important; /* Compact, elegant font size for portrait */
   }
 

@@ -2,7 +2,7 @@
 
 This file summarizes the development progress of the Booking App as of the last session.
 
-## Current Status (2026-04-16)
+## Current Status (2026-10-18)
 
 The application is a full-stack booking system with advanced, role-based scheduling and approval workflows.
 
@@ -30,8 +30,9 @@ The application is a full-stack booking system with advanced, role-based schedul
 ### Frontend (`/client`)
 
 *   **Framework:** React (using Vite).
-*   **State Management:** React Context (`AuthContext`).
+*   **State Management:** React Context (`AuthContext`, `ReportContext`, `BookingContext`).
 *   **Features:**
+    *   **User Bookings Drawer (`UserBookingsDrawer`):** A mobile-first slide-over bottom sheet / drawer accessible via the Navbar, the calendar header, and a mobile thumb FAB. Displays categorised summaries of requested (pending), approved (confirmed), rejected (denied), and cancelled bookings with direct cancel (for pending) and request-withdrawal (for confirmed) actions without permanently taking up calendar screen space.
     *   **Split Admin Dashboard:** Admin tasks are now split into two pages for clarity:
         *   **Admin Dashboard (`/admin`):** For frequent tasks like booking management, user management, updating the Message of the Day, and testing Web Push alerts (allowing targeting of yourself, specific users by case-insensitive username, or broadcasting globally).
         *   **4 Year Cycle Setup (`/admin/cycle-setup`):** For the rare task of setting up the 4-year color schedule.

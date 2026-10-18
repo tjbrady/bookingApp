@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useMemo } from 'react';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext.jsx';
 import { ReportContext } from '../context/ReportContext.jsx';
+import { useBookings } from '../context/BookingContext.jsx';
 import { useNavigate } from 'react-router-dom';
 import { formatDate, toUTCKey, createUTCDate, getStartOfWeekUTC, addDaysUTC } from '../utils/dateUtils';
 import './Calendar.css';
@@ -15,7 +16,7 @@ const colourMap = {
 };
 
 const Bookings = () => {
-  const [myBookings, setMyBookings] = useState([]);
+  const { myBookings, activeCount, openDrawer, fetchMyBookings } = useBookings();
   const [publicBookings, setPublicBookings] = useState([]);
   const [colourSchedule, setColourSchedule] = useState([]);
   const [selection, setSelection] = useState({ start: null, end: null });
@@ -55,26 +56,27 @@ const Bookings = () => {
   const fetchAllData = async () => {
     setLoadingData(true);
     try {
-      const [scheduleRes, publicBookingsRes, myBookingsRes] = await Promise.all([
+      const [scheduleRes, publicBookingsRes] = await Promise.all([
         api.get('/schedule'),
         api.get('/bookings/public'),
-        api.get('/bookings'),
       ]);
       setColourSchedule(scheduleRes.data);
       setPublicBookings(publicBookingsRes.data);
-
-      let finalMyBookings = myBookingsRes.data;
-      if (sessionStorage.getItem('hideCancelledBookings') === 'true') {
-        finalMyBookings = myBookingsRes.data.filter(b => b.status !== 'cancelled');
-      }
-      setMyBookings(finalMyBookings);
-
     } catch (err) {
       console.error(err);
       setError('Failed to load booking data.');
     } 
     finally { setLoadingData(false); }
   };
+
+  // Keep publicBookings calendar display in sync if user changes booking status in drawer
+  useEffect(() => {
+    if (!loadingData && isAuthenticated) {
+      api.get('/bookings/public')
+        .then(res => setPublicBookings(res.data))
+        .catch(err => console.error('Failed to sync calendar bookings:', err));
+    }
+  }, [myBookings, loadingData, isAuthenticated]);
 
   useEffect(() => {
     if (authLoading) return;
@@ -196,39 +198,11 @@ const Bookings = () => {
           dateTo: selection.end.toISOString() 
       });
       await fetchAllData();
+      await fetchMyBookings();
       setSelection({ start: null, end: null });
     } catch (err) {
       alert(err.response?.data?.msg || 'Failed to send request.');
     }
-  };
-
-  const handleCancelBooking = async (bookingId, currentStatus) => {
-    if (!window.confirm(`Are you sure you want to ${currentStatus === 'pending' ? 'cancel' : 'request cancellation for'} this booking?`)) {
-      return;
-    }
-
-    try {
-      const res = await api.put(`/bookings/${bookingId}`, { status: 'cancelled' });
-      setMyBookings(myBookings.map(b => b._id === bookingId ? res.data : b));
-      if (currentStatus === 'confirmed' && res.data.status === 'cancellation_pending') {
-          setPublicBookings(prevPublic => prevPublic.map(pb => pb._id !== bookingId ? pb : { ...pb, status: res.data.status }));
-      } else if (res.data.status === 'cancelled') {
-          setPublicBookings(prevPublic => prevPublic.filter(pb => pb._id !== bookingId));
-      }
-      alert(`Booking ${currentStatus === 'pending' ? 'cancelled' : 'cancellation requested'} successfully!`);
-    } catch (err) {
-      alert(err.response?.data?.msg || `Failed to ${currentStatus === 'pending' ? 'cancel' : 'request cancellation'}.`);
-    }
-  };
-
-  const handleClearCancelled = () => {
-    sessionStorage.setItem('hideCancelledBookings', 'true');
-    setMyBookings(currentBookings => currentBookings.filter(b => b.status !== 'cancelled'));
-  };
-
-  const handleShowAll = () => {
-    sessionStorage.removeItem('hideCancelledBookings');
-    fetchAllData();
   };
 
   const renderMonth = (year, monthIndex) => {
@@ -305,126 +279,77 @@ const Bookings = () => {
   if (authLoading || loadingData) return <p>Loading Calendar...</p>;
   if (error) return <p style={{ color: 'red' }}>{error}</p>;
 
-  const hasCancelledBookings = myBookings.some(b => b.status === 'cancelled');
-  const isHidingCancelled = sessionStorage.getItem('hideCancelledBookings') === 'true';
-
-    return (
-      <div>
-        <div className="bookings-sticky-header">
-          {/* ... existing header code ... */}
-          <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <div className="header-title-column" style={{ flex: '1 1 200px', minWidth: '200px' }}>
-              <div className="bookings-request-notice" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span className="notice-icon">💡</span>
-                  <span className="notice-text">
-                    <strong>Blue, Orange & Yellow - ONLY!</strong><br />
-                    Bookings are for nights. (e.g. Fri - Sun means you leave Monday morning)
-                  </span>
-                </div>
+  return (
+    <div>
+      <div className="bookings-sticky-header">
+        <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap' }}>
+          <div className="header-title-column" style={{ flex: '1 1 300px', minWidth: '240px' }}>
+            <div className="bookings-request-notice" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="notice-icon">💡</span>
+                <span className="notice-text">
+                  <strong>Blue, Orange & Yellow - ONLY!</strong><br />
+                  Bookings are for nights. (e.g. Fri - Sun means you leave Monday morning)
+                </span>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '4px' }}>
+                <button
+                  type="button"
+                  onClick={openDrawer}
+                  className="btn-my-requests-trigger"
+                  title="View your booking requests and status"
+                >
+                  📋 My Requests {activeCount > 0 && <span className="bookings-header-badge">{activeCount}</span>}
+                </button>
                 <button 
                   onClick={handlePrintUserReportClick} 
                   disabled={reportLoading}
-                  style={{
-                    marginTop: '4px',
-                    padding: '6px 12px',
-                    fontSize: '0.85rem',
-                    backgroundColor: '#0284c7',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    fontWeight: 'bold',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
-                  }}
+                  className="btn-print-report"
                 >
-                  📄 {reportLoading ? 'Generating...' : 'Print Bookings Report'}
+                  📄 {reportLoading ? 'Generating...' : 'Print Report'}
                 </button>
               </div>
             </div>
-            <div className="header-bookings-list-column" style={{ flex: '2 1 400px', minWidth: '300px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0' }}>
-                <h3 style={{ margin: 0, padding: 0, lineHeight: 1.2 }}>My Booking Requests</h3>
-                {hasCancelledBookings && (
-                  <button onClick={handleClearCancelled} style={{ padding: '4px 8px', fontSize: '0.8em', backgroundColor: '#6c757d', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                    Clear Cancelled
-                  </button>
-                )}
-                {isHidingCancelled && !hasCancelledBookings && (
-                  <button onClick={handleShowAll} style={{ padding: '4px 8px', fontSize: '0.8em', backgroundColor: '#007bff', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                    Show All
-                  </button>
-                )}
-              </div>
-              {myBookings.length === 0 ? <p style={{marginTop: '0'}}>You have no booking requests.</p> : (
-                <ul style={{marginBottom: '1rem', marginTop: '0', listStyle: 'none', padding: 0}}>
-                  {myBookings.map((booking) => (
-                    <li key={booking._id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', marginBottom: '10px', padding: '10px', background: '#fcfcfc', border: '1px solid #eef', borderRadius: '6px' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '5px' }}>
-                        <span>Night of {formatDate(booking.dateFrom)} to Night of {formatDate(booking.dateTo)} - <strong>[{booking.colours?.join(', ')}]</strong> - <strong style={{ textTransform: 'capitalize' }}>{booking.status}</strong></span>
-                        {(booking.status === 'pending' || booking.status === 'confirmed') && (
-                            <button onClick={() => handleCancelBooking(booking._id, booking.status)} style={{ marginLeft: 'auto', padding: '5px 10px', backgroundColor: '#dc3545', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>
-                                {booking.status === 'pending' ? 'Cancel' : 'Request Cancellation'}
-                            </button>
-                        )}
-                        {booking.status === 'cancellation_pending' && (
-                            <span style={{ marginLeft: 'auto', color: '#ffc107', fontWeight: 'bold' }}>Awaiting Admin Review</span>
-                        )}
-                      </div>
-                      
-                      {booking.editHistory && booking.editHistory.length > 0 && (
-                        <div style={{ background: '#fff9f0', borderLeft: '3px solid #ff9800', padding: '8px', marginTop: '8px', borderRadius: '4px', fontSize: '0.85em', width: '100%', boxSizing: 'border-box' }}>
-                          <strong style={{ color: '#d97706' }}>✏️ Booking Adjustment History:</strong>
-                          <ul style={{ paddingLeft: '15px', margin: '4px 0 0 0' }}>
-                            {booking.editHistory.map((h, i) => (
-                              <li key={i} style={{ margin: '4px 0', listStyleType: 'disc' }}>
-                                Adjusted by <strong>{h.editedBy?.username || 'Admin'}</strong> on {formatDate(h.editedAt)}:
-                                <div style={{ color: '#555', marginTop: '2px' }}>
-                                  <strong>Previous Dates:</strong> {formatDate(h.previousDateFrom)} to {formatDate(h.previousDateTo)}
-                                </div>
-                                <div style={{ color: '#555' }}>
-                                  <strong>Reason:</strong> <em>"{h.reason}"</em>
-                                </div>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <div className="header-instructions-column instructions-box" style={{ flex: '1 1 450px' }}>
-              <h3 style={{ margin: '0', padding: 0, lineHeight: 1.2 }}>How to Request a Booking:</h3>
-              <ul style={{ listStyleType: 'none', padding: '0', margin: '0' }}>
-                <li style={{ marginBottom: '0.5rem' }}>• Click your first Night to start a booking.</li>
-                <li style={{ marginBottom: '0.5rem' }}>• Click your last Night to complete the selection.</li>
-                <li style={{ marginBottom: '0.5rem' }}>• Use the "Clear Selection" button if incorrect.</li>
-                <li>• Click "Request Booking" to send for approval.</li>
-              </ul>
-            </div>
           </div>
-          {selection.start && selection.end && (
-            <div className="header-action-area" style={{textAlign: 'center', margin: '1rem 0'}}>
-              <button onClick={handleRequestBooking}>Request Booking: {formatDate(selection.start)} - {formatDate(selection.end)}</button>
-              <button onClick={() => setSelection({start: null, end: null})} style={{marginLeft: '10px'}}>Clear Selection</button>
-            </div>
-          )}
+
+          <div className="header-instructions-column instructions-box" style={{ flex: '1 1 350px' }}>
+            <h3 style={{ margin: '0', padding: 0, lineHeight: 1.2 }}>How to Request a Booking:</h3>
+            <ul style={{ listStyleType: 'none', padding: '0', margin: '0' }}>
+              <li style={{ marginBottom: '0.5rem' }}>• Click your first Night to start a booking.</li>
+              <li style={{ marginBottom: '0.5rem' }}>• Click your last Night to complete the selection.</li>
+              <li style={{ marginBottom: '0.5rem' }}>• Use the "Clear Selection" button if incorrect.</li>
+              <li>• Click "Request Booking" to send for approval.</li>
+            </ul>
+          </div>
         </div>
 
-        <div className="calendar-grid-container">
-          {monthsToShow.map(({ year, month }) => (
-            <React.Fragment key={`${year}-${month}`}>
-              {renderMonth(year, month)}
-            </React.Fragment>
-          ))}
-        </div>
+        {selection.start && selection.end && (
+          <div className="header-action-area" style={{textAlign: 'center', margin: '1rem 0'}}>
+            <button onClick={handleRequestBooking}>Request Booking: {formatDate(selection.start)} - {formatDate(selection.end)}</button>
+            <button onClick={() => setSelection({start: null, end: null})} style={{marginLeft: '10px'}}>Clear Selection</button>
+          </div>
+        )}
       </div>
-    );
+
+      {/* Floating Action Pill on Mobile for quick access anywhere on the calendar */}
+      <button
+        className="mobile-bookings-fab"
+        onClick={openDrawer}
+        type="button"
+        aria-label="View My Requests"
+      >
+        📋 My Requests {activeCount > 0 && <span className="fab-badge">{activeCount}</span>}
+      </button>
+
+      <div className="calendar-grid-container">
+        {monthsToShow.map(({ year, month }) => (
+          <React.Fragment key={`${year}-${month}`}>
+            {renderMonth(year, month)}
+          </React.Fragment>
+        ))}
+      </div>
+    </div>
+  );
 };
 
 export default Bookings;
